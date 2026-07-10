@@ -21,9 +21,20 @@ let cachedVersion = null
 let _restartingAfterPairing = false
 let _pendingPairingRestart = false
 
+const FALLBACK_VERSION = [2, 3000, 1017891836]
+
 async function getVersion() {
   if (!cachedVersion) {
-    cachedVersion = (await fetchLatestBaileysVersion()).version
+    try {
+      const result = await Promise.race([
+        fetchLatestBaileysVersion(),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 10000))
+      ])
+      cachedVersion = result.version
+    } catch (e) {
+      console.log('[WA] Version fetch failed, using fallback:', e.message)
+      cachedVersion = FALLBACK_VERSION
+    }
   }
   return cachedVersion
 }
@@ -57,19 +68,24 @@ export async function initWA(io) {
   _io = io
   client.isInitialized = true
 
-  if (!fs.existsSync(SESSION_DIR)) {
-    fs.mkdirSync(SESSION_DIR, { recursive: true })
-  }
+  try {
+    if (!fs.existsSync(SESSION_DIR)) {
+      fs.mkdirSync(SESSION_DIR, { recursive: true })
+    }
 
-  let { state } = await useMultiFileAuthState(SESSION_DIR)
+    let { state } = await useMultiFileAuthState(SESSION_DIR)
 
-  if (state.creds && state.creds.me && !state.creds.registered) {
-    fs.rmSync(SESSION_DIR, { recursive: true, force: true })
-    fs.mkdirSync(SESSION_DIR, { recursive: true })
-    const fresh = await useMultiFileAuthState(SESSION_DIR)
-    state = fresh.state
-  }
-  const sock = makeWASocket({
+    if (state.creds && state.creds.me && !state.creds.registered) {
+      fs.rmSync(SESSION_DIR, { recursive: true, force: true })
+      fs.mkdirSync(SESSION_DIR, { recursive: true })
+      const fresh = await useMultiFileAuthState(SESSION_DIR)
+      state = fresh.state
+    }
+
+    const version = await getVersion()
+    console.log('[WA] Using Baileys version:', version.join('.'))
+
+    const sock = makeWASocket({
     version: await getVersion(),
     auth: state,
     printQRInTerminal: false,
@@ -168,6 +184,13 @@ export async function initWA(io) {
   })
 
   return client
+  } catch (e) {
+    console.error('[WA] initWA error:', e.message)
+    client.isInitialized = false
+    client.sock = null
+    setTimeout(() => initWA(io), 5000)
+    return client
+  }
 }
 
 export async function requestPairingCode(phoneNumber) {
