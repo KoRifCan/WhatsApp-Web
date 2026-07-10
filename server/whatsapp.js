@@ -123,12 +123,7 @@ export async function initWA(io) {
     fs.writeFileSync(path.join(SESSION_DIR, 'creds.json'), JSON.stringify(creds, BufferJSON.replacer, 2))
     if (creds.registered && !_credsWereRegistered) {
       _credsWereRegistered = true
-      console.log('[WA] Phone pairing completed, restarting connection...')
-      _restartingAfterPairing = true
-      client.qrCode = null
-      client.isInitialized = false
-      try { sock.end?.() } catch {}
-      setTimeout(() => { _restartingAfterPairing = false; initWA(_io) }, 2000)
+      console.log('[WA] Phone pairing completed')
     }
   })
 
@@ -164,18 +159,23 @@ export async function initWA(io) {
       client.isConnected = false
       client.qrCode = null
       client.sock = null
-      if (_restartingAfterPairing) return
       if (statusCode !== DisconnectReason.loggedOut) {
         _reconnectAttempts++
         const delay = Math.min(5000 * Math.pow(2, _reconnectAttempts), 60000)
         console.log(`[WA] Reconnecting in ${delay}ms (attempt ${_reconnectAttempts})`)
         setTimeout(() => {
-          if (fs.existsSync(SESSION_DIR) && client.user === null) {
+          if (_credsWereRegistered) {
+            client.isInitialized = false
+            initWA(io)
+          } else if (fs.existsSync(SESSION_DIR) && client.user === null) {
             fs.rmSync(SESSION_DIR, { recursive: true, force: true })
             console.log('[WA] Cleaned incomplete session, starting fresh')
+            client.isInitialized = false
+            initWA(io)
+          } else {
+            client.isInitialized = false
+            initWA(io)
           }
-          client.isInitialized = false
-          initWA(io)
         }, delay)
       } else {
         client.user = null
