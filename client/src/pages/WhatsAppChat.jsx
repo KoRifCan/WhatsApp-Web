@@ -165,12 +165,12 @@ export default function WhatsAppChat() {
   const [countrySearch, setCountrySearch] = useState('')
   const [selectedCountry, setSelectedCountry] = useState(countries[0])
   const [mobileView, setMobileView] = useState('list')
-  const [qrTimer, setQrTimer] = useState(0)
+  const [qrAge, setQrAge] = useState(0)
   const socketRef = useRef(null)
   const loginModeRef = useRef(loginMode)
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
-  const prevQrRef = useRef(null)
+  const qrTsRef = useRef(null)
 
   const toggleTheme = useCallback(() => {
     setTheme((prev) => {
@@ -217,19 +217,16 @@ export default function WhatsAppChat() {
   useEffect(() => { if (activeJid && inputRef.current) inputRef.current.focus() }, [activeJid])
 
   useEffect(() => {
-    if (qrCode && qrCode !== prevQrRef.current) {
-      prevQrRef.current = qrCode
-      setQrTimer(20)
-    }
+    if (qrCode) qrTsRef.current = Date.now()
   }, [qrCode])
 
   useEffect(() => {
-    if (qrTimer <= 0) return
+    if (!qrCode) return
     const id = setInterval(() => {
-      setQrTimer(prev => Math.max(0, prev - 1))
+      setQrAge(Math.floor((Date.now() - qrTsRef.current) / 1000))
     }, 1000)
     return () => clearInterval(id)
-  }, [qrTimer])
+  }, [qrCode])
 
   const sendMessage = (e) => {
     e.preventDefault()
@@ -351,11 +348,7 @@ export default function WhatsAppChat() {
                 </div>
               </div>
               <div style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>
-                {qrTimer > 0 ? (
-                  <span>Kode QR berubah dalam {qrTimer} detik</span>
-                ) : (
-                  <span style={{ color: 'var(--green-accent)' }}>Memperbarui kode QR...</span>
-                )}
+                Kode QR: {qrAge} detik
               </div>
               <button onClick={() => setLoginMode('phone')} style={{
                 background: 'none', border: 'none', color: 'var(--green-dark)', cursor: 'pointer',
