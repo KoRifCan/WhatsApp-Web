@@ -341,11 +341,6 @@ export default function WhatsAppChat() {
             <div className="wa-auth-right">
               <div className="wa-qr-wrap">
                 <img src={qrCode} alt="QR" style={{ width: '100%', height: '100%', objectFit: 'contain', opacity: 0.9 }} />
-                <div className="wa-qr-center-icon">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--green-accent)">
-                    <path d="M12.004 2c-5.517 0-9.996 4.479-9.996 9.995 0 1.764.459 3.419 1.258 4.861l-1.262 4.609 4.716-1.237c1.401.763 3.001 1.199 4.704 1.199 5.518 0 9.996-4.479 9.996-9.995S17.522 2 12.004 2zM6.836 16.929l-.273-.434c-.742-1.181-1.134-2.545-1.134-3.957 0-4.108 3.342-7.45 7.451-7.45 4.109 0 7.451 3.342 7.451 7.45s-3.342 7.451-7.451 7.451c-1.353 0-2.68-.363-3.839-1.05l-.454-.27-2.846.746.746-2.723z"/>
-                  </svg>
-                </div>
               </div>
 
               <button onClick={() => setLoginMode('phone')} className="wa-link-btn" style={{ fontSize: 12.5 }}>
@@ -413,6 +408,7 @@ export default function WhatsAppChat() {
                 type="tel"
                 value={phoneNumber}
                 onChange={e => setPhoneNumber(e.target.value.replace(/[^0-9]/g, ''))}
+                onKeyDown={e => { if (e.key === 'Enter' && phoneNumber.trim().length >= 8 && !pairLoading) handlePair() }}
                 placeholder={t('phone.label')}
                 autoFocus
                 disabled={pairLoading}
