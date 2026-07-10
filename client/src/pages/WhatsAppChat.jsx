@@ -140,7 +140,7 @@ function Footer() {
         {LOCK_ICON}
         {t('encryption')}
       </p>
-      <a href="#" style={{ color: 'var(--text-secondary)', fontSize: 11, textDecoration: 'none', opacity: 0.7 }}>{t('footer.terms')}</a>
+      <a href="https://www.whatsapp.com/legal/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-secondary)', fontSize: 11, textDecoration: 'none', opacity: 0.7 }}>{t('footer.terms')}</a>
     </div>
   )
 }
