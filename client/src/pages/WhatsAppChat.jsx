@@ -312,7 +312,7 @@ export default function WhatsAppChat() {
               <div className="wa-qr-wrap">
                 <img src={qrCode} alt="QR" style={{ width: '100%', height: '100%', objectFit: 'contain', opacity: 0.9 }} />
                 <div className="wa-qr-center-icon">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--text-primary)">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--green-accent)">
                     <path d="M12.004 2c-5.517 0-9.996 4.479-9.996 9.995 0 1.764.459 3.419 1.258 4.861l-1.262 4.609 4.716-1.237c1.401.763 3.001 1.199 4.704 1.199 5.518 0 9.996-4.479 9.996-9.995S17.522 2 12.004 2zM6.836 16.929l-.273-.434c-.742-1.181-1.134-2.545-1.134-3.957 0-4.108 3.342-7.45 7.451-7.45 4.109 0 7.451 3.342 7.451 7.45s-3.342 7.451-7.451 7.451c-1.353 0-2.68-.363-3.839-1.05l-.454-.27-2.846.746.746-2.723z"/>
                   </svg>
                 </div>
@@ -486,13 +486,21 @@ export default function WhatsAppChat() {
   // ===== LOADING =====
   if (!connected) {
     return (
-      <div style={{ minHeight: '100vh', width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', background: 'var(--auth-bg)' }}>
-        <Header showLang={false} lang={lang} onLang={switchLang} onTheme={toggleTheme} theme={theme} />
+      <div style={{ minHeight: '100vh', width: '100%', display: 'flex', flexDirection: 'column', background: 'var(--auth-bg)' }}>
+        <div style={{ padding: '40px 24px 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+          {WA_ICON}
+          <span style={{ color: 'var(--green-icon)', fontWeight: 600, fontSize: 21, letterSpacing: '0.3px' }}>WhatsApp</span>
+        </div>
         <main style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 20, color: 'var(--text-secondary)', fontSize: 14 }}>
           <div className="spinner" />
           <p>{t('loading')}</p>
         </main>
-        <Footer />
+        <div style={{ padding: '32px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, textAlign: 'center', flexShrink: 0 }}>
+          <p style={{ color: 'var(--text-secondary)', fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, opacity: 0.85 }}>
+            {LOCK_ICON}
+            {t('encryption')}
+          </p>
+        </div>
       </div>
     )
   }
