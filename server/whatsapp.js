@@ -78,6 +78,15 @@ export async function initWA(io) {
   sock.ev.on('creds.update', (creds) => {
     if (!fs.existsSync(SESSION_DIR)) fs.mkdirSync(SESSION_DIR, { recursive: true })
     fs.writeFileSync(path.join(SESSION_DIR, 'creds.json'), JSON.stringify(creds, null, 2))
+    if (creds.registered && !client.isConnected) {
+      console.log('[WA] Phone pairing completed, restarting connection...')
+      client.isConnected = false
+      client.qrCode = null
+      client.sock = null
+      client.isInitialized = false
+      try { sock.end?.() } catch {}
+      setTimeout(() => initWA(_io), 2000)
+    }
   })
 
   sock.ev.on('connection.update', async (update) => {

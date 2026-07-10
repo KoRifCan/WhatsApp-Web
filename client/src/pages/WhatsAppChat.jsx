@@ -345,7 +345,7 @@ export default function WhatsAppChat() {
 
             {/* Country Selector */}
             <div onClick={() => setShowCountryPicker(!showCountryPicker)} className="wa-country-trigger" style={{ marginBottom: 16 }}>
-              <span style={{ fontSize: 16 }}>{getFlagEmoji(selectedCountry.code)}</span>
+              <img src={`https://flagcdn.com/24x18/${selectedCountry.code.toLowerCase()}.png`} alt="" style={{ width: 24, height: 18, borderRadius: 2, flexShrink: 0 }} />
               <span>{selectedCountry.name}</span>
               <div style={{ marginLeft: 'auto', display: 'flex' }}>{CHEVRON_DOWN}</div>
             </div>
@@ -363,7 +363,10 @@ export default function WhatsAppChat() {
                     <div key={c.code} onClick={() => { setSelectedCountry(c); setShowCountryPicker(false); setCountrySearch('') }}
                       className={`wa-country-item ${selectedCountry.code === c.code ? 'active' : ''}`}
                     >
-                      <span>{c.name}</span>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <img src={`https://flagcdn.com/16x12/${c.code.toLowerCase()}.png`} alt="" style={{ width: 16, height: 12, borderRadius: 1, flexShrink: 0 }} />
+                        {c.name}
+                      </span>
                       <span style={{ color: 'var(--text-secondary)', fontSize: 13 }}>{c.dial}</span>
                     </div>
                   ))}
