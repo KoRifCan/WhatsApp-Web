@@ -486,16 +486,16 @@ export default function WhatsAppChat() {
   // ===== LOADING =====
   if (!connected) {
     return (
-      <div className="wa-auth" style={{ justifyContent: 'space-between' }}>
-        <div style={{ padding: '44px 24px 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, flexShrink: 0 }}>
-          {WA_ICON}
-          <span style={{ color: 'var(--green-icon)', fontWeight: 600, fontSize: 21, letterSpacing: '0.3px' }}>WhatsApp</span>
-        </div>
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 20, color: 'var(--text-secondary)', fontSize: 14, margin: '0 16px' }}>
-          <div className="spinner" />
-          <p>{t('loading')}</p>
-        </div>
-        <div style={{ padding: '24px 16px 40px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', flexShrink: 0 }}>
+      <div className="wa-auth">
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 28, padding: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {WA_ICON}
+            <span style={{ color: 'var(--green-icon)', fontWeight: 600, fontSize: 21, letterSpacing: '0.3px' }}>WhatsApp</span>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20, color: 'var(--text-secondary)', fontSize: 14 }}>
+            <div className="spinner" />
+            <p>{t('loading')}</p>
+          </div>
           <p style={{ color: 'var(--text-secondary)', fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, opacity: 0.85 }}>
             {LOCK_ICON}
             {t('encryption')}
