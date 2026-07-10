@@ -49,10 +49,6 @@ export function getWAStatus() {
   }
 }
 
-export function getChats() {
-  return client.chats || []
-}
-
 function waitForSockReady(timeout = 8000) {
   if (client.sock && client.qrCode) return Promise.resolve()
   if (client.isConnected) return Promise.resolve()
@@ -97,8 +93,8 @@ export async function initWA(io) {
       version,
       auth: state,
       printQRInTerminal: false,
-      logger: pino({ level: 'warn' }),
-      browser: ['Windows', 'Chrome', '120.0.0.0'],
+      logger: pino({ level: 'silent' }),
+      browser: ['Ubuntu', 'Chrome', '22.04.4'],
       syncFullHistory: false,
       connectTimeoutMs: 60000,
       qrTimeout: 120000,
@@ -183,56 +179,11 @@ export async function initWA(io) {
         client.user = null
         client.qrCode = null
         client.isInitialized = false
-        client.contacts = []
-        client.chats = []
         _credsWereRegistered = false
         if (fs.existsSync(SESSION_DIR)) fs.rmSync(SESSION_DIR, { recursive: true, force: true })
         io.emit('wa:loggedOut')
       }
     }
-  })
-
-  sock.ev.on('messages.upsert', async ({ messages }) => {
-    for (const msg of messages) {
-      const jid = msg.key.remoteJid
-      if (!jid || jid.includes('@g.us') || jid.includes('@broadcast')) continue
-      const text =
-        msg.message?.conversation ||
-        msg.message?.extendedTextMessage?.text ||
-        msg.message?.imageMessage?.caption ||
-        ''
-      io.emit('wa:message', {
-        from: jid,
-        message: {
-          id: msg.key.id,
-          fromMe: msg.key.fromMe,
-          text,
-          type: msg.message?.imageMessage ? 'image' : 'text',
-          timestamp: new Date((msg.messageTimestamp || 0) * 1000).toISOString(),
-        },
-      })
-    }
-  })
-
-  sock.ev.on('contacts.upsert', (contacts) => {
-    const list = contacts
-      .filter((c) => c.id.endsWith('@s.whatsapp.net'))
-      .map((c) => ({ jid: c.id, name: c.name || c.notify || c.id.split('@')[0] }))
-    client.contacts = list
-    io.emit('wa:contacts', list)
-  })
-
-  sock.ev.on('chats.upsert', (chats) => {
-    const list = chats
-      .filter((c) => c.id.endsWith('@s.whatsapp.net'))
-      .map((c) => ({
-        jid: c.id,
-        name: c.name || c.id.split('@')[0],
-        timestamp: c.conversationTimestamp ? new Date((c.conversationTimestamp || 0) * 1000).toISOString() : null,
-        unread: c.unreadCount || 0,
-      }))
-    client.chats = list
-    io.emit('wa:chats', list)
   })
 
   return client
@@ -298,8 +249,6 @@ export async function logoutWA() {
   client.isConnected = false
   client.isInitialized = false
   client.user = null
-  client.contacts = []
-  client.chats = []
   _credsWereRegistered = false
   const dir = SESSION_DIR
   if (fs.existsSync(dir)) fs.rmSync(dir, { recursive: true, force: true })

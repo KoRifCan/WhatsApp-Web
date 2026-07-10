@@ -198,25 +198,7 @@ export default function WhatsAppChat() {
       else if (s.hasQR) socket.emit('wa:start')
     })
     socket.on('wa:qr', (d) => { if (loginModeRef.current === 'qr') setQrCode(d) })
-    socket.on('wa:ready', ({ user }) => { setConnected(true); setQrCode(null); setPairingCode(null); setWaUser(user); socket.emit('wa:getChats'); socket.emit('wa:getContacts') })
-    socket.on('wa:chats', (chats) => {
-      setContacts(prev => {
-        const merged = [...chats]
-        for (const c of prev) {
-          if (!merged.find(m => m.jid === c.jid)) merged.push(c)
-        }
-        return merged
-      })
-    })
-    socket.on('wa:contacts', (contacts) => {
-      setContacts(prev => {
-        const merged = [...prev]
-        for (const c of contacts) {
-          if (!merged.find(m => m.jid === c.jid)) merged.push(c)
-        }
-        return merged
-      })
-    })
+    socket.on('wa:ready', ({ user }) => { setConnected(true); setQrCode(null); setPairingCode(null); setWaUser(user) })
     socket.on('wa:message', ({ from, message }) => {
       setMessages(p => ({ ...p, [from]: [...(p[from] || []), message] }))
     })
