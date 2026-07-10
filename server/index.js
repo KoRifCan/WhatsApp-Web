@@ -5,36 +5,10 @@ import { Server } from 'socket.io'
 import path from 'path'
 import fs from 'fs'
 import { fileURLToPath } from 'url'
-import { execSync } from 'child_process'
 import { initWA, sendWAMessage, logoutWA, getWAStatus, requestPairingCode, resetWA, getChats } from './whatsapp.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const PORT = process.env.PORT || 3001
-const TUNNEL_FILE = '/tmp/tunnel_url.txt'
-
-function getTunnelUrl() {
-  try {
-    if (fs.existsSync(TUNNEL_FILE)) {
-      const url = fs.readFileSync(TUNNEL_FILE, 'utf-8').trim()
-      if (url) return url
-    }
-    const logs = execSync('pm2 logs cloudflared --nostream --lines 100 2>/dev/null || true', { encoding: 'utf-8', timeout: 5000 })
-    const match = logs.match(/https?:\/\/[a-zA-Z0-9.-]+\.trycloudflare\.com/)
-    if (match) return match[0]
-  } catch {}
-  return null
-}
-
-let cachedTunnelUrl = getTunnelUrl()
-
-// refresh tunnel URL periodically
-setInterval(() => {
-  const u = getTunnelUrl()
-  if (u && u !== cachedTunnelUrl) {
-    cachedTunnelUrl = u
-    console.log('[Tunnel] URL refreshed:', u)
-  }
-}, 15000)
 
 const app = express()
 app.use(cors())
@@ -62,10 +36,6 @@ app.get('/api/wa/status', (req, res) => {
   res.json(getWAStatus())
 })
 
-app.get('/api/wa/tunnel-url', (req, res) => {
-  res.json({ url: cachedTunnelUrl || null })
-})
-
 app.post('/api/wa/logout', async (req, res) => {
   await logoutWA()
   waClient = null
@@ -74,7 +44,6 @@ app.post('/api/wa/logout', async (req, res) => {
 
 io.on('connection', (socket) => {
   socket.emit('wa:status', getWAStatus())
-  if (cachedTunnelUrl) socket.emit('wa:tunnel-url', cachedTunnelUrl)
   if (waClient?.qrCode) {
     socket.emit('wa:qr', waClient.qrCode)
   }

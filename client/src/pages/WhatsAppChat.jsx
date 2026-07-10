@@ -201,7 +201,6 @@ export default function WhatsAppChat() {
         if (s.connected) setConnected(true)
         else if (s.hasQR) socket.emit('wa:start')
       })
-      socket.on('wa:tunnel-url', (u) => { if (u) localStorage.setItem('wa:backend', u) })
       socket.on('wa:qr', (d) => { if (loginModeRef.current === 'qr') setQrCode(d) })
       socket.on('wa:ready', ({ user }) => { setConnected(true); setQrCode(null); setPairingCode(null); setWaUser(user); socket.emit('wa:getChats'); socket.emit('wa:getContacts') })
       socket.on('wa:chats', (chats) => {

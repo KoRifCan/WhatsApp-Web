@@ -123,7 +123,6 @@ export async function initWA(io) {
     fs.writeFileSync(path.join(SESSION_DIR, 'creds.json'), JSON.stringify(creds, BufferJSON.replacer, 2))
     if (creds.registered && !_credsWereRegistered) {
       _credsWereRegistered = true
-      _pendingPairingRestart = false
       console.log('[WA] Phone pairing completed, restarting connection...')
       _restartingAfterPairing = true
       client.qrCode = null
