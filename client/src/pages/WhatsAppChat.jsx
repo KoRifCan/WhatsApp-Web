@@ -238,7 +238,7 @@ export default function WhatsAppChat() {
 
   const switchToQR = () => {
     setLoginMode('qr'); setPairingCode(null); setPairError(''); setCopied(false)
-    setPhoneNumber('')
+    setPhoneNumber(''); setQrCode(null)
     socketRef.current?.emit('wa:start')
   }
 
