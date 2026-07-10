@@ -97,7 +97,7 @@ export async function initWA(io) {
       version,
       auth: state,
       printQRInTerminal: false,
-      logger: pino({ level: 'silent' }),
+      logger: pino({ level: 'warn' }),
       browser: ['Ubuntu', 'Chrome', '22.04.4'],
       syncFullHistory: false,
       connectTimeoutMs: 60000,
