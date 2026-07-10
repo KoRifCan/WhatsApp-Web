@@ -27,7 +27,7 @@ function formatPairCode(code) {
 }
 
 function getFlagEmoji(code) {
-  if (!code) return '🇮🇩'
+  if (!code) return ''
   const cps = code.toUpperCase().split('').map(c => 0x1F1E6 + c.charCodeAt(0) - 65)
   return String.fromCodePoint(...cps)
 }
@@ -42,46 +42,32 @@ function getInitialLang() {
 
 countries.sort((a, b) => (a.priority || 99) - (b.priority || 99))
 
-const S = {
-  bg: '#FAF9F4',
-  cardBg: '#FFFFFF',
-  cardBorder: '#E9EDEF',
-  textPrimary: '#111B21',
-  textSecondary: '#667781',
-  textMuted: '#3B4A54',
-  textPlaceholder: '#8696A0',
-  greenAccent: '#00A884',
-  greenDark: '#008069',
-  greenBrand: '#25D366',
-  codeBg: '#F0F2F5',
-}
-
 const WA_ICON = (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill={S.greenBrand}>
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--green-icon)">
     <path d="M12.004 2c-5.517 0-9.996 4.479-9.996 9.995 0 1.764.459 3.419 1.258 4.861l-1.262 4.609 4.716-1.237c1.401.763 3.001 1.199 4.704 1.199 5.518 0 9.996-4.479 9.996-9.995S17.522 2 12.004 2zM6.836 16.929l-.273-.434c-.742-1.181-1.134-2.545-1.134-3.957 0-4.108 3.342-7.45 7.451-7.45 4.109 0 7.451 3.342 7.451 7.45s-3.342 7.451-7.451 7.451c-1.353 0-2.68-.363-3.839-1.05l-.454-.27-2.846.746.746-2.723z"/>
   </svg>
 )
 
 const WA_BADGE = (
-  <span style={{ display: 'inline-flex', background: S.greenBrand, color: '#fff', borderRadius: 4, width: 18, height: 18, alignItems: 'center', justifyContent: 'center', verticalAlign: 'middle' }}>
+  <span style={{ display: 'inline-flex', background: 'var(--green-icon)', color: '#fff', borderRadius: 4, width: 18, height: 18, alignItems: 'center', justifyContent: 'center', verticalAlign: 'middle' }}>
     <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.713-1.454L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.42 9.864-9.858.002-2.634-1.019-5.111-2.875-6.968-1.857-1.857-4.335-2.875-6.972-2.875-5.437 0-9.862 4.42-9.866 9.86-.001 1.716.463 3.391 1.341 4.877l-.986 3.605 3.693-.969z"/></svg>
   </span>
 )
 
 const LOCK_ICON = (
-  <svg width="14" height="14" viewBox="0 0 20 20" fill={S.textSecondary}>
+  <svg width="14" height="14" viewBox="0 0 20 20" fill="var(--text-secondary)">
     <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd"/>
   </svg>
 )
 
-const CHEVRON = (color = S.greenDark) => (
+const CHEVRON = (color = 'var(--green-dark)') => (
   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
     <path d="M9 5l7 7-7 7"/>
   </svg>
 )
 
 const CHEVRON_DOWN = (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={S.textSecondary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M19 9l-7 7-7-7"/>
   </svg>
 )
@@ -91,7 +77,7 @@ function StepBadge({ num }) {
     <span style={{
       display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
       minWidth: 20, maxWidth: 20, height: 20, borderRadius: '50%',
-      border: '1px solid #8696A0', color: S.textSecondary, fontSize: 11, fontWeight: 500,
+      border: '1px solid var(--text-tertiary)', color: 'var(--text-secondary)', fontSize: 11, fontWeight: 500,
       marginRight: 12, marginTop: 2, flexShrink: 0,
     }}>
       {num}
@@ -104,20 +90,20 @@ function Header({ showLang = true, lang, onLang, onTheme, theme }) {
     <div style={{ width: '100%', padding: '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         {WA_ICON}
-        <span style={{ color: S.greenBrand, fontWeight: 600, fontSize: 17, letterSpacing: '0.3px' }}>WhatsApp</span>
+        <span style={{ color: 'var(--green-icon)', fontWeight: 600, fontSize: 17, letterSpacing: '0.3px' }}>WhatsApp</span>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
         {showLang && (
           <button onClick={onLang} style={{
             background: 'rgba(37,211,102,0.1)', border: '1px solid rgba(37,211,102,0.25)',
-            color: S.greenBrand, cursor: 'pointer', fontSize: 11, fontWeight: 700,
+            color: 'var(--green-icon)', cursor: 'pointer', fontSize: 11, fontWeight: 700,
             padding: '3px 8px', borderRadius: 4,
           }}>
             {lang === 'id' ? 'EN' : 'ID'}
           </button>
         )}
         <button onClick={onTheme} style={{
-          background: 'none', border: 'none', color: S.textSecondary, cursor: 'pointer',
+          background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer',
           padding: 6, borderRadius: '50%', display: 'flex',
         }}>
           {theme === 'dark' ? (
@@ -138,15 +124,15 @@ function Header({ showLang = true, lang, onLang, onTheme, theme }) {
 function Footer() {
   return (
     <div style={{ padding: '32px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, textAlign: 'center', flexShrink: 0 }}>
-      <p style={{ color: S.textSecondary, fontSize: 13 }}>
+      <p style={{ color: 'var(--text-secondary)', fontSize: 13 }}>
         Tidak punya akun WhatsApp?{' '}
-        <a href="#" style={{ color: S.greenDark, fontWeight: 500, textDecoration: 'none' }}>Mulai ↗</a>
+        <a href="#" style={{ color: 'var(--green-dark)', fontWeight: 500, textDecoration: 'none' }}>Mulai ↗</a>
       </p>
-      <p style={{ color: S.textSecondary, fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, opacity: 0.85 }}>
+      <p style={{ color: 'var(--text-secondary)', fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, opacity: 0.85 }}>
         {LOCK_ICON}
         Pesan pribadi Anda terenkripsi secara end-to-end
       </p>
-      <a href="#" style={{ color: S.textSecondary, fontSize: 11, textDecoration: 'none', opacity: 0.7 }}>Ketentuan & Kebijakan Privasi</a>
+      <a href="#" style={{ color: 'var(--text-secondary)', fontSize: 11, textDecoration: 'none', opacity: 0.7 }}>Ketentuan & Kebijakan Privasi</a>
     </div>
   )
 }
@@ -172,6 +158,7 @@ export default function WhatsAppChat() {
   const [selectedCountry, setSelectedCountry] = useState(countries[0])
   const [mobileView, setMobileView] = useState('list')
   const socketRef = useRef(null)
+  const loginModeRef = useRef(loginMode)
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
 
@@ -191,11 +178,13 @@ export default function WhatsAppChat() {
 
   useEffect(() => { document.documentElement.setAttribute('data-theme', theme) }, [theme])
 
+  useEffect(() => { loginModeRef.current = loginMode }, [loginMode])
+
   useEffect(() => {
     const socket = io(SOCKET_URL, { transports: ['websocket', 'polling'] })
     socketRef.current = socket
     socket.on('wa:status', (s) => { if (s.connected) setConnected(true) })
-    socket.on('wa:qr', (d) => { if (loginMode === 'qr') setQrCode(d) })
+    socket.on('wa:qr', (d) => { if (loginModeRef.current === 'qr') setQrCode(d) })
     socket.on('wa:ready', ({ user }) => { setConnected(true); setQrCode(null); setPairingCode(null); setWaUser(user) })
     socket.on('wa:contacts', setContacts)
     socket.on('wa:message', ({ from, message }) => {
@@ -211,8 +200,8 @@ export default function WhatsAppChat() {
       setMessages({}); setActiveJid(null); setPairingCode(null); setLoginMode('qr')
     })
     socket.emit('wa:start')
-    return () => socket.close()
-  }, [loginMode])
+    return () => { socket.close() }
+  }, [])
 
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages, activeJid])
   useEffect(() => { if (activeJid && inputRef.current) inputRef.current.focus() }, [activeJid])
@@ -261,66 +250,59 @@ export default function WhatsAppChat() {
   const activeContact = contacts.find(c => c.jid === activeJid)
   const activeColor = getColor(activeContact?.name)
 
-  const ps = (s) => ({ ...s, color: theme === 'dark' ? '#e9edef' : s.color, borderColor: theme === 'dark' ? '#2a3942' : s.borderColor, background: theme === 'dark' ? '#1f2c33' : s.background })
-  const bg = theme === 'dark' ? '#111b21' : S.bg
-  const cardBg = theme === 'dark' ? '#1f2c33' : S.cardBg
-  const cardBorder = theme === 'dark' ? '#2a3942' : S.cardBorder
-  const textPrimary = theme === 'dark' ? '#e9edef' : S.textPrimary
-  const textSecondary = theme === 'dark' ? '#8696a0' : S.textSecondary
-
   // ===== SCREEN 3: QR Code Login =====
   if (!connected && qrCode && loginMode === 'qr') {
     return (
-      <div style={{ height: '100vh', width: '100%', display: 'flex', flexDirection: 'column', background: bg }}>
+      <div style={{ height: '100vh', width: '100%', display: 'flex', flexDirection: 'column', background: 'var(--auth-bg)' }}>
         <Header showLang lang={lang} onLang={switchLang} onTheme={toggleTheme} theme={theme} />
         <main style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, overflowY: 'auto' }}>
           <div style={{
-            width: '100%', maxWidth: 640, background: cardBg, borderRadius: 24,
-            border: `1px solid ${cardBorder}`, boxShadow: '0 2px 5px rgba(11,20,26,0.05)',
+            width: '100%', maxWidth: 640, background: 'var(--card-bg)', borderRadius: 24,
+            border: '1px solid var(--card-border)', boxShadow: '0 2px 5px rgba(11,20,26,0.05)',
             padding: '32px 28px', display: 'flex', gap: 28,
             flexDirection: window.innerWidth < 768 ? 'column' : 'row',
             alignItems: window.innerWidth < 768 ? 'center' : 'flex-start',
           }}>
             {/* LEFT COLUMN */}
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', width: '100%' }}>
-              <h2 style={{ fontSize: 20, fontWeight: 400, color: textPrimary, marginBottom: 20, letterSpacing: '-0.2px' }}>
+              <h2 style={{ fontSize: 20, fontWeight: 400, color: 'var(--text-primary)', marginBottom: 20, letterSpacing: '-0.2px' }}>
                 Pindai untuk login
               </h2>
               <ol style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                <li style={{ display: 'flex', alignItems: 'flex-start', fontSize: 13, color: '#3B4A54', lineHeight: 1.5, marginBottom: 16 }}>
+                <li style={{ display: 'flex', alignItems: 'flex-start', fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: 16 }}>
                   <StepBadge num={1} />
                   <span>Pindai kode QR dengan kamera telepon Anda</span>
                 </li>
-                <li style={{ display: 'flex', alignItems: 'flex-start', fontSize: 13, color: '#3B4A54', lineHeight: 1.5, marginBottom: 16 }}>
+                <li style={{ display: 'flex', alignItems: 'flex-start', fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: 16 }}>
                   <StepBadge num={2} />
                   <span style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
-                    Ketuk tautan untuk membuka <strong style={{ color: textPrimary, fontWeight: 600 }}>WhatsApp</strong> {WA_BADGE}
+                    Ketuk tautan untuk membuka <strong style={{ color: 'var(--text-primary)', fontWeight: 600 }}>WhatsApp</strong> {WA_BADGE}
                   </span>
                 </li>
-                <li style={{ display: 'flex', alignItems: 'flex-start', fontSize: 13, color: '#3B4A54', lineHeight: 1.5, marginBottom: 16 }}>
+                <li style={{ display: 'flex', alignItems: 'flex-start', fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: 16 }}>
                   <StepBadge num={3} />
                   <span>Pindai kode QR lagi untuk menautkan ke akun Anda</span>
                 </li>
               </ol>
-              <a href="#" style={{ color: S.greenDark, fontSize: 12.5, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', marginBottom: 20 }}>
+              <a href="#" style={{ color: 'var(--green-dark)', fontSize: 12.5, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', marginBottom: 20 }}>
                 Perlu bantuan? <span style={{ fontSize: 10, marginLeft: 3 }}>↗</span>
               </a>
               <div style={{
                 display: 'flex', alignItems: 'center', gap: 8, paddingTop: 12,
-                borderTop: `1px solid ${cardBorder}`, marginTop: 'auto',
+                borderTop: '1px solid var(--card-border)', marginTop: 'auto',
               }}>
                 <span style={{
-                  width: 16, height: 16, background: S.greenAccent, borderRadius: 4,
+                  width: 16, height: 16, background: 'var(--green-accent)', borderRadius: 4,
                   display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
                 }}>
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M5 13l4 4L19 7"/>
                   </svg>
                 </span>
-                <span style={{ color: '#3B4A54', fontSize: 12.5 }}>Tetap masuk di browser ini</span>
+                <span style={{ color: 'var(--text-muted)', fontSize: 12.5 }}>Tetap masuk di browser ini</span>
                 <span style={{
-                  color: S.textSecondary, cursor: 'pointer', fontSize: 10,
-                  border: '1px solid #d0d5db', borderRadius: '50%', width: 14, height: 14,
+                  color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 10,
+                  border: '1px solid var(--text-tertiary)', borderRadius: '50%', width: 14, height: 14,
                   display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'serif',
                 }}>i</span>
               </div>
@@ -344,7 +326,7 @@ export default function WhatsAppChat() {
                 </div>
               </div>
               <button onClick={() => setLoginMode('phone')} style={{
-                background: 'none', border: 'none', color: S.greenDark, cursor: 'pointer',
+                background: 'none', border: 'none', color: 'var(--green-dark)', cursor: 'pointer',
                 fontSize: 12.5, fontWeight: 500, display: 'inline-flex', alignItems: 'center', padding: 0,
               }}>
                 Login dengan nomor telepon {CHEVRON()}
@@ -360,31 +342,31 @@ export default function WhatsAppChat() {
   // ===== SCREEN 1: Phone Number Input =====
   if (!connected && loginMode === 'phone' && !pairingCode) {
     return (
-      <div style={{ height: '100vh', width: '100%', display: 'flex', flexDirection: 'column', background: bg }}>
+      <div style={{ height: '100vh', width: '100%', display: 'flex', flexDirection: 'column', background: 'var(--auth-bg)' }}>
         <Header showLang lang={lang} onLang={switchLang} onTheme={toggleTheme} theme={theme} />
         <main style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, overflowY: 'auto' }}>
           <div style={{
-            width: '100%', maxWidth: 440, background: cardBg, borderRadius: 24,
-            border: `1px solid ${cardBorder}`, boxShadow: '0 2px 5px rgba(11,20,26,0.05)',
+            width: '100%', maxWidth: 440, background: 'var(--card-bg)', borderRadius: 24,
+            border: '1px solid var(--card-border)', boxShadow: '0 2px 5px rgba(11,20,26,0.05)',
             padding: 32, display: 'flex', flexDirection: 'column', alignItems: 'center',
           }}>
-            <h2 style={{ fontSize: 22, fontWeight: 400, color: textPrimary, textAlign: 'center', marginBottom: 8, letterSpacing: '-0.3px' }}>
+            <h2 style={{ fontSize: 22, fontWeight: 400, color: 'var(--text-primary)', textAlign: 'center', marginBottom: 8, letterSpacing: '-0.3px' }}>
               Masukkan nomor telepon
             </h2>
-            <p style={{ color: textSecondary, fontSize: 14, textAlign: 'center', marginBottom: 32, lineHeight: 1.5 }}>
+            <p style={{ color: 'var(--text-secondary)', fontSize: 14, textAlign: 'center', marginBottom: 32, lineHeight: 1.5 }}>
               Pilih negara lalu masukkan nomor telepon Anda.
             </p>
 
             {/* Country Selector */}
             <div onClick={() => setShowCountryPicker(!showCountryPicker)} style={{
               width: '100%', height: 50, background: 'transparent',
-              border: `1px solid ${cardBorder}`, borderRadius: 9999,
+              border: '1px solid var(--card-border)', borderRadius: 9999,
               padding: '0 20px', display: 'flex', alignItems: 'center', gap: 12,
-              cursor: 'pointer', fontSize: 14, color: textPrimary, marginBottom: 16,
+              cursor: 'pointer', fontSize: 14, color: 'var(--text-primary)', marginBottom: 16,
               transition: 'border-color 0.2s',
             }}>
               <span style={{ fontSize: 16 }}>{getFlagEmoji(selectedCountry.code)}</span>
-              <span style={{ fontWeight: 400, color: textPrimary }}>{selectedCountry.name}</span>
+              <span style={{ fontWeight: 400, color: 'var(--text-primary)' }}>{selectedCountry.name}</span>
               <div style={{ marginLeft: 'auto', display: 'flex' }}>{CHEVRON_DOWN}</div>
             </div>
 
@@ -394,16 +376,16 @@ export default function WhatsAppChat() {
                   <input type="text" value={countrySearch} onChange={e => setCountrySearch(e.target.value)}
                     placeholder="Cari negara..."
                     style={{
-                      width: '100%', padding: '8px 16px', border: `1px solid ${cardBorder}`,
-                      borderRadius: 9999, background: cardBg, color: textPrimary,
+                      width: '100%', padding: '8px 16px', border: '1px solid var(--card-border)',
+                      borderRadius: 9999, background: 'var(--card-bg)', color: 'var(--text-primary)',
                       fontSize: 13, outline: 'none',
                     }}
                     autoFocus
                   />
                 </div>
                 <div style={{
-                  maxHeight: 200, overflowY: 'auto', background: cardBg,
-                  border: `1px solid ${cardBorder}`, borderRadius: 12,
+                  maxHeight: 200, overflowY: 'auto', background: 'var(--card-bg)',
+                  border: '1px solid var(--card-border)', borderRadius: 12,
                   marginTop: 4, position: 'absolute', left: 0, right: 0,
                   boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
                 }}>
@@ -412,12 +394,12 @@ export default function WhatsAppChat() {
                       style={{
                         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                         padding: '10px 16px', cursor: 'pointer', fontSize: 14,
-                        background: selectedCountry.code === c.code ? (theme === 'dark' ? '#2a3942' : '#e8e8e8') : 'transparent',
-                        color: textPrimary, transition: 'background 0.1s',
+                        background: selectedCountry.code === c.code ? 'var(--wa-active)' : 'transparent',
+                        color: 'var(--text-primary)', transition: 'background 0.1s',
                       }}
                     >
                       <span>{c.name}</span>
-                      <span style={{ color: textSecondary, fontSize: 13 }}>{c.dial}</span>
+                      <span style={{ color: 'var(--text-secondary)', fontSize: 13 }}>{c.dial}</span>
                     </div>
                   ))}
                 </div>
@@ -427,13 +409,13 @@ export default function WhatsAppChat() {
             {/* Phone Input */}
             <div style={{
               width: '100%', height: 50, background: 'transparent',
-              border: `1px solid ${cardBorder}`, borderRadius: 9999,
+              border: '1px solid var(--card-border)', borderRadius: 9999,
               padding: '0 20px', display: 'flex', alignItems: 'center',
               marginBottom: pairError ? 12 : 32, transition: 'border-color 0.2s',
             }}
               className="phone-input-focus"
             >
-              <span style={{ color: textPrimary, fontSize: 14, fontWeight: 400, paddingRight: 12, borderRight: `1px solid ${cardBorder}`, marginRight: 12 }}>
+              <span style={{ color: 'var(--text-primary)', fontSize: 14, fontWeight: 400, paddingRight: 12, borderRight: '1px solid var(--card-border)', marginRight: 12 }}>
                 {selectedCountry.dial}
               </span>
               <input
@@ -445,7 +427,7 @@ export default function WhatsAppChat() {
                 disabled={pairLoading}
                 style={{
                   flex: 1, border: 'none', outline: 'none', background: 'transparent',
-                  color: textPrimary, fontSize: 14,
+                  color: 'var(--text-primary)', fontSize: 14,
                 }}
               />
             </div>
@@ -457,7 +439,7 @@ export default function WhatsAppChat() {
             }}>{pairError}</div>}
 
             <button onClick={handlePair} disabled={pairLoading || !phoneNumber.trim()} style={{
-              width: '100%', height: 40, background: pairLoading || !phoneNumber.trim() ? 'rgba(0,168,132,0.6)' : S.greenAccent,
+              width: '100%', height: 40, background: pairLoading || !phoneNumber.trim() ? 'rgba(0,168,132,0.6)' : 'var(--green-accent)',
               color: '#fff', border: 'none', borderRadius: 9999,
               fontSize: 14, fontWeight: 500, cursor: pairLoading || !phoneNumber.trim() ? 'not-allowed' : 'pointer',
             }}>
@@ -465,7 +447,7 @@ export default function WhatsAppChat() {
             </button>
 
             <button onClick={switchToQR} style={{
-              background: 'none', border: 'none', color: S.greenDark, cursor: 'pointer',
+              background: 'none', border: 'none', color: 'var(--green-dark)', cursor: 'pointer',
               fontSize: 14, fontWeight: 500, display: 'inline-flex', alignItems: 'center',
               marginTop: 24, padding: 0,
             }}>
@@ -486,40 +468,40 @@ export default function WhatsAppChat() {
     const right = parts[1]?.split('') || []
 
     return (
-      <div style={{ height: '100vh', width: '100%', display: 'flex', flexDirection: 'column', background: bg }}>
+      <div style={{ height: '100vh', width: '100%', display: 'flex', flexDirection: 'column', background: 'var(--auth-bg)' }}>
         <Header showLang lang={lang} onLang={switchLang} onTheme={toggleTheme} theme={theme} />
         <main style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, overflowY: 'auto' }}>
           <div style={{
-            width: '100%', maxWidth: 440, background: cardBg, borderRadius: 24,
-            border: `1px solid ${cardBorder}`, boxShadow: '0 2px 5px rgba(11,20,26,0.05)',
+            width: '100%', maxWidth: 440, background: 'var(--card-bg)', borderRadius: 24,
+            border: '1px solid var(--card-border)', boxShadow: '0 2px 5px rgba(11,20,26,0.05)',
             padding: '28px 32px', display: 'flex', flexDirection: 'column',
           }}>
-            <h2 style={{ fontSize: 22, fontWeight: 400, color: textPrimary, marginBottom: 8, letterSpacing: '-0.3px' }}>
+            <h2 style={{ fontSize: 22, fontWeight: 400, color: 'var(--text-primary)', marginBottom: 8, letterSpacing: '-0.3px' }}>
               Masukkan kode di telepon
             </h2>
-            <p style={{ color: textSecondary, fontSize: 14, marginBottom: 24, lineHeight: 1.5 }}>
-              Menautkan akun WhatsApp <strong style={{ color: textPrimary, fontWeight: 500 }}>{selectedCountry.dial} {phoneNumber}</strong> (<button onClick={switchToQR} style={{ background: 'none', border: 'none', color: S.greenDark, cursor: 'pointer', fontSize: 14, padding: 0 }}>edit</button>)
+            <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginBottom: 24, lineHeight: 1.5 }}>
+              Menautkan akun WhatsApp <strong style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{selectedCountry.dial} {phoneNumber}</strong> (<button onClick={switchToQR} style={{ background: 'none', border: 'none', color: 'var(--green-dark)', cursor: 'pointer', fontSize: 14, padding: 0 }}>edit</button>)
             </p>
 
             {/* Code boxes */}
             <div style={{
-              width: '100%', background: theme === 'dark' ? '#111b21' : S.codeBg, borderRadius: 12,
+              width: '100%', background: 'var(--wa-secondary)', borderRadius: 12,
               padding: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, marginBottom: 24,
             }}>
               {left.map((ch, i) => (
                 <span key={`l${i}`} style={{
-                  width: 36, height: 44, background: cardBg, borderRadius: 6,
-                  border: `1px solid ${cardBorder}`, display: 'flex', alignItems: 'center',
-                  justifyContent: 'center', fontSize: 18, fontWeight: 700, color: textPrimary,
+                  width: 36, height: 44, background: 'var(--card-bg)', borderRadius: 6,
+                  border: '1px solid var(--card-border)', display: 'flex', alignItems: 'center',
+                  justifyContent: 'center', fontSize: 18, fontWeight: 700, color: 'var(--text-primary)',
                   boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
                 }}>{ch}</span>
               ))}
-              <span style={{ color: S.textSecondary, fontWeight: 700, fontSize: 16, padding: '0 2px' }}>-</span>
+              <span style={{ color: 'var(--text-secondary)', fontWeight: 700, fontSize: 16, padding: '0 2px' }}>-</span>
               {right.map((ch, i) => (
                 <span key={`r${i}`} style={{
-                  width: 36, height: 44, background: cardBg, borderRadius: 6,
-                  border: `1px solid ${cardBorder}`, display: 'flex', alignItems: 'center',
-                  justifyContent: 'center', fontSize: 18, fontWeight: 700, color: textPrimary,
+                  width: 36, height: 44, background: 'var(--card-bg)', borderRadius: 6,
+                  border: '1px solid var(--card-border)', display: 'flex', alignItems: 'center',
+                  justifyContent: 'center', fontSize: 18, fontWeight: 700, color: 'var(--text-primary)',
                   boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
                 }}>{ch}</span>
               ))}
@@ -527,30 +509,30 @@ export default function WhatsAppChat() {
 
             {/* Steps */}
             <ol style={{ listStyle: 'none', padding: 0, margin: '0 0 32px' }}>
-              <li style={{ display: 'flex', alignItems: 'flex-start', fontSize: 13.5, color: '#3B4A54', lineHeight: 1.5, marginBottom: 14 }}>
+              <li style={{ display: 'flex', alignItems: 'flex-start', fontSize: 13.5, color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: 14 }}>
                 <StepBadge num={1} />
-                <span>Buka <strong style={{ color: textPrimary, fontWeight: 600 }}>WhatsApp</strong>{' '}
-                  <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: S.greenBrand, verticalAlign: 'middle', margin: '0 2px' }}></span>
+                <span>Buka <strong style={{ color: 'var(--text-primary)', fontWeight: 600 }}>WhatsApp</strong>{' '}
+                  <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: 'var(--green-icon)', verticalAlign: 'middle', margin: '0 2px' }}></span>
                   {' '}di telepon
                 </span>
               </li>
-              <li style={{ display: 'flex', alignItems: 'flex-start', fontSize: 13.5, color: '#3B4A54', lineHeight: 1.5, marginBottom: 14 }}>
+              <li style={{ display: 'flex', alignItems: 'flex-start', fontSize: 13.5, color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: 14 }}>
                 <StepBadge num={2} />
-                <span>Di Android ketuk <strong style={{ color: textPrimary, fontWeight: 600 }}>Menu</strong> <strong style={{ color: textPrimary, fontWeight: 700, letterSpacing: '-0.5px' }}>⋮</strong> · Di iPhone ketuk <strong style={{ color: textPrimary, fontWeight: 600 }}>Pengaturan</strong> ⚙️</span>
+                <span>Di Android ketuk <strong style={{ color: 'var(--text-primary)', fontWeight: 600 }}>Menu</strong> <strong style={{ color: 'var(--text-primary)', fontWeight: 700, letterSpacing: '-0.5px' }}>⋮</strong> · Di iPhone ketuk <strong style={{ color: 'var(--text-primary)', fontWeight: 600 }}>Pengaturan</strong> ⚙️</span>
               </li>
-              <li style={{ display: 'flex', alignItems: 'flex-start', fontSize: 13.5, color: '#3B4A54', lineHeight: 1.5, marginBottom: 14 }}>
+              <li style={{ display: 'flex', alignItems: 'flex-start', fontSize: 13.5, color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: 14 }}>
                 <StepBadge num={3} />
-                <span>Ketuk <strong style={{ color: textPrimary, fontWeight: 600 }}>Perangkat tertaut</strong>, lalu <strong style={{ color: textPrimary, fontWeight: 600 }}>Tautkan perangkat</strong></span>
+                <span>Ketuk <strong style={{ color: 'var(--text-primary)', fontWeight: 600 }}>Perangkat tertaut</strong>, lalu <strong style={{ color: 'var(--text-primary)', fontWeight: 600 }}>Tautkan perangkat</strong></span>
               </li>
-              <li style={{ display: 'flex', alignItems: 'flex-start', fontSize: 13.5, color: '#3B4A54', lineHeight: 1.5 }}>
+              <li style={{ display: 'flex', alignItems: 'flex-start', fontSize: 13.5, color: 'var(--text-muted)', lineHeight: 1.5 }}>
                 <StepBadge num={4} />
-                <span>Ketuk <strong style={{ color: textPrimary, fontWeight: 600 }}>Tautkan dengan nomor telepon saja</strong>, lalu masukkan kode ini di telepon Anda</span>
+                <span>Ketuk <strong style={{ color: 'var(--text-primary)', fontWeight: 600 }}>Tautkan dengan nomor telepon saja</strong>, lalu masukkan kode ini di telepon Anda</span>
               </li>
             </ol>
 
-            <div style={{ textAlign: 'center', borderTop: `1px solid ${cardBorder}`, paddingTop: 20 }}>
+            <div style={{ textAlign: 'center', borderTop: '1px solid var(--card-border)', paddingTop: 20 }}>
               <button onClick={switchToQR} style={{
-                background: 'none', border: 'none', color: S.greenDark, cursor: 'pointer',
+                background: 'none', border: 'none', color: 'var(--green-dark)', cursor: 'pointer',
                 fontSize: 14, fontWeight: 500, display: 'inline-flex', alignItems: 'center', padding: 0,
               }}>
                 Login dengan kode QR {CHEVRON()}
@@ -566,9 +548,9 @@ export default function WhatsAppChat() {
   // ===== LOADING =====
   if (!connected) {
     return (
-      <div style={{ height: '100vh', width: '100%', display: 'flex', flexDirection: 'column', background: bg }}>
+      <div style={{ height: '100vh', width: '100%', display: 'flex', flexDirection: 'column', background: 'var(--auth-bg)' }}>
         <Header showLang={false} lang={lang} onLang={switchLang} onTheme={toggleTheme} theme={theme} />
-        <main style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 20, color: textSecondary, fontSize: 14 }}>
+        <main style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 20, color: 'var(--text-secondary)', fontSize: 14 }}>
           <div className="spinner" />
           <p>Menghubungkan...</p>
         </main>
