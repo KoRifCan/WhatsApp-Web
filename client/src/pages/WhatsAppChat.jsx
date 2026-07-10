@@ -165,10 +165,12 @@ export default function WhatsAppChat() {
   const [countrySearch, setCountrySearch] = useState('')
   const [selectedCountry, setSelectedCountry] = useState(countries[0])
   const [mobileView, setMobileView] = useState('list')
+  const [qrTimer, setQrTimer] = useState(0)
   const socketRef = useRef(null)
   const loginModeRef = useRef(loginMode)
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
+  const prevQrRef = useRef(null)
 
   const toggleTheme = useCallback(() => {
     setTheme((prev) => {
@@ -213,6 +215,21 @@ export default function WhatsAppChat() {
 
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages, activeJid])
   useEffect(() => { if (activeJid && inputRef.current) inputRef.current.focus() }, [activeJid])
+
+  useEffect(() => {
+    if (qrCode && qrCode !== prevQrRef.current) {
+      prevQrRef.current = qrCode
+      setQrTimer(20)
+    }
+  }, [qrCode])
+
+  useEffect(() => {
+    if (qrTimer <= 0) return
+    const id = setInterval(() => {
+      setQrTimer(prev => Math.max(0, prev - 1))
+    }, 1000)
+    return () => clearInterval(id)
+  }, [qrTimer])
 
   const sendMessage = (e) => {
     e.preventDefault()
@@ -332,6 +349,13 @@ export default function WhatsAppChat() {
                     <path d="M12.004 2c-5.517 0-9.996 4.479-9.996 9.995 0 1.764.459 3.419 1.258 4.861l-1.262 4.609 4.716-1.237c1.401.763 3.001 1.199 4.704 1.199 5.518 0 9.996-4.479 9.996-9.995S17.522 2 12.004 2zM6.836 16.929l-.273-.434c-.742-1.181-1.134-2.545-1.134-3.957 0-4.108 3.342-7.45 7.451-7.45 4.109 0 7.451 3.342 7.451 7.45s-3.342 7.451-7.451 7.451c-1.353 0-2.68-.363-3.839-1.05l-.454-.27-2.846.746.746-2.723z"/>
                   </svg>
                 </div>
+              </div>
+              <div style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>
+                {qrTimer > 0 ? (
+                  <span>Kode QR berubah dalam {qrTimer} detik</span>
+                ) : (
+                  <span style={{ color: 'var(--green-accent)' }}>Memperbarui kode QR...</span>
+                )}
               </div>
               <button onClick={() => setLoginMode('phone')} style={{
                 background: 'none', border: 'none', color: 'var(--green-dark)', cursor: 'pointer',
