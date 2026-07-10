@@ -99,10 +99,9 @@ export async function initWA(io) {
       printQRInTerminal: false,
       logger: pino({ level: 'warn' }),
       browser: ['Windows', 'Chrome', '120.0.0.0'],
-      syncFullHistory: true,
+      syncFullHistory: false,
       connectTimeoutMs: 60000,
       qrTimeout: 120000,
-      keepAliveIntervalMs: 10000,
     })
 
     client.sock = sock
@@ -172,6 +171,11 @@ export async function initWA(io) {
         const delay = Math.min(5000 * Math.pow(2, _reconnectAttempts), 60000)
         console.log(`[WA] Reconnecting in ${delay}ms (attempt ${_reconnectAttempts})`)
         setTimeout(() => {
+          if (fs.existsSync(SESSION_DIR) && client.user === null) {
+            // incomplete pairing session, start fresh
+            fs.rmSync(SESSION_DIR, { recursive: true, force: true })
+            console.log('[WA] Cleaned incomplete session, starting fresh')
+          }
           client.isInitialized = false
           initWA(io)
         }, delay)
