@@ -107,17 +107,20 @@ export async function initWA(io) {
     console.log('[WA] Socket created, waiting for QR/connection...')
 
   let initTimer = setTimeout(() => {
-    console.log('[WA] No QR or connection after 25s, restarting...')
+    console.log('[WA] No QR or connection after 5min, restarting...')
     client.isInitialized = false
     client.qrCode = null
     client.sock = null
     try { sock.end?.() } catch {}
     setTimeout(() => initWA(io), 1000)
-  }, 25000)
+  }, 300000)
 
   const clearInitTimer = () => { try { clearTimeout(initTimer) } catch {} }
 
   sock.ev.on('creds.update', (creds) => {
+    if (creds.registered) {
+      console.log('[WA] creds.update: registered=true, wasRegistered=' + _credsWereRegistered)
+    }
     if (!fs.existsSync(SESSION_DIR)) fs.mkdirSync(SESSION_DIR, { recursive: true })
     fs.writeFileSync(path.join(SESSION_DIR, 'creds.json'), JSON.stringify(creds, BufferJSON.replacer, 2))
     if (creds.registered && !_credsWereRegistered) {
