@@ -8,11 +8,29 @@ import { v4 as uuidv4 } from 'uuid'
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import multer from 'multer'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const DATA_FILE = path.join(__dirname, 'data.json')
-const JWT_SECRET = 'whatsapp-clone-secret-key-2024'
+const UPLOADS_DIR = path.join(__dirname, 'uploads')
+const JWT_SECRET = process.env.JWT_SECRET || 'whatsapp-clone-secret-key-2024'
 const PORT = process.env.PORT || 3001
+
+if (!fs.existsSync(UPLOADS_DIR)) {
+  fs.mkdirSync(UPLOADS_DIR, { recursive: true })
+}
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, UPLOADS_DIR),
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname)
+    cb(null, `${uuidv4()}${ext}`)
+  },
+})
+const upload = multer({
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024 },
+})
 
 function loadData() {
   try {
@@ -29,9 +47,21 @@ function saveData(data) {
   fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2))
 }
 
+function authMiddleware(req, res, next) {
+  const token = req.headers.authorization?.split(' ')[1]
+  if (!token) return res.status(401).json({ error: 'Unauthorized' })
+  try {
+    req.userId = jwt.verify(token, JWT_SECRET).userId
+    next()
+  } catch {
+    res.status(401).json({ error: 'Invalid token' })
+  }
+}
+
 const app = express()
 app.use(cors())
 app.use(express.json())
+app.use('/uploads', express.static(UPLOADS_DIR))
 
 const server = http.createServer(app)
 const io = new Server(server, {
@@ -84,55 +114,48 @@ app.post('/api/login', async (req, res) => {
   res.json({ user: userWithoutPassword, token })
 })
 
-app.get('/api/users', (req, res) => {
-  const token = req.headers.authorization?.split(' ')[1]
-  if (!token) return res.status(401).json({ error: 'Unauthorized' })
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET)
-    const data = loadData()
-    const users = Object.values(data.users)
-      .filter(u => u.id !== decoded.userId)
-      .map(({ password, ...u }) => u)
-    res.json(users)
-  } catch (e) {
-    res.status(401).json({ error: 'Invalid token' })
-  }
+app.get('/api/users', authMiddleware, (req, res) => {
+  const data = loadData()
+  const users = Object.values(data.users)
+    .filter(u => u.id !== req.userId)
+    .map(({ password, ...u }) => u)
+  res.json(users)
 })
 
-app.get('/api/conversations', (req, res) => {
-  const token = req.headers.authorization?.split(' ')[1]
-  if (!token) return res.status(401).json({ error: 'Unauthorized' })
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET)
-    const data = loadData()
-    const convs = Object.values(data.conversations)
-      .filter(c => c.participants.includes(decoded.userId))
-      .map(c => {
-        const otherUserId = c.participants.find(p => p !== decoded.userId)
-        const otherUser = data.users[otherUserId]
-        return {
-          ...c,
-          otherUser: otherUser ? { id: otherUser.id, name: otherUser.name, phone: otherUser.phone, avatar: otherUser.avatar, online: otherUser.online } : null,
-        }
-      })
-      .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
-    res.json(convs)
-  } catch (e) {
-    res.status(401).json({ error: 'Invalid token' })
-  }
+app.get('/api/conversations', authMiddleware, (req, res) => {
+  const data = loadData()
+  const convs = Object.values(data.conversations)
+    .filter(c => c.participants.includes(req.userId))
+    .map(c => {
+      const otherUserId = c.participants.find(p => p !== req.userId)
+      const otherUser = data.users[otherUserId]
+      return {
+        ...c,
+        otherUser: otherUser
+          ? { id: otherUser.id, name: otherUser.name, phone: otherUser.phone, avatar: otherUser.avatar, online: otherUser.online }
+          : null,
+      }
+    })
+    .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
+  res.json(convs)
 })
 
-app.get('/api/messages/:conversationId', (req, res) => {
-  const token = req.headers.authorization?.split(' ')[1]
-  if (!token) return res.status(401).json({ error: 'Unauthorized' })
-  try {
-    jwt.verify(token, JWT_SECRET)
-    const data = loadData()
-    const messages = data.messages[req.params.conversationId] || []
-    res.json(messages)
-  } catch (e) {
-    res.status(401).json({ error: 'Invalid token' })
-  }
+app.get('/api/messages/:conversationId', authMiddleware, (req, res) => {
+  const data = loadData()
+  const messages = data.messages[req.params.conversationId] || []
+  res.json(messages)
+})
+
+app.post('/api/upload', authMiddleware, upload.single('file'), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'No file uploaded' })
+  const isImage = req.file.mimetype.startsWith('image/')
+  res.json({
+    url: `/uploads/${req.file.filename}`,
+    name: req.file.originalname,
+    size: req.file.size,
+    type: req.file.mimetype,
+    isImage,
+  })
 })
 
 function authenticateSocket(token) {
@@ -164,8 +187,8 @@ io.on('connection', (socket) => {
 
   socket.on('conversation:start', ({ targetUserId }) => {
     const data = loadData()
-    const existing = Object.values(data.conversations).find(c =>
-      c.participants.includes(socket.userId) && c.participants.includes(targetUserId)
+    const existing = Object.values(data.conversations).find(
+      c => c.participants.includes(socket.userId) && c.participants.includes(targetUserId)
     )
     if (existing) {
       socket.emit('conversation:created', existing)
@@ -180,10 +203,12 @@ io.on('connection', (socket) => {
     data.conversations[conv.id] = conv
     data.messages[conv.id] = []
     saveData(data)
-    io.to(`user:${socket.userId}`).to(`user:${targetUserId}`).emit('conversation:created', conv)
+    io.to(`user:${socket.userId}`)
+      .to(`user:${targetUserId}`)
+      .emit('conversation:created', conv)
   })
 
-  socket.on('message:send', ({ conversationId, text, type = 'text' }) => {
+  socket.on('message:send', ({ conversationId, text, type = 'text', fileUrl, fileName, fileType }) => {
     const data = loadData()
     const conv = data.conversations[conversationId]
     if (!conv || !conv.participants.includes(socket.userId)) return
@@ -193,33 +218,48 @@ io.on('connection', (socket) => {
       senderId: socket.userId,
       text,
       type,
+      fileUrl,
+      fileName,
+      fileType,
       timestamp: new Date().toISOString(),
       status: 'sent',
+      edited: false,
+      deleted: false,
     }
 
     if (!data.messages[conversationId]) data.messages[conversationId] = []
     data.messages[conversationId].push(message)
 
-    conv.lastMessage = { text, senderId: socket.userId, timestamp: message.timestamp }
+    const preview = type === 'image' ? 'Gambar' : type === 'file' ? fileName || 'File' : text
+    conv.lastMessage = {
+      text: preview,
+      senderId: socket.userId,
+      timestamp: message.timestamp,
+      type,
+    }
     conv.updatedAt = message.timestamp
     saveData(data)
 
-    conv.participants.forEach(pid => {
+    conv.participants.forEach((pid) => {
       io.to(`user:${pid}`).emit('message:new', { conversationId, message })
       io.to(`user:${pid}`).emit('conversation:updated', {
         ...conv,
-        otherUser: data.users[conv.participants.find(p => p !== pid)],
+        otherUser: data.users[conv.participants.find((p) => p !== pid)],
       })
     })
 
     setTimeout(() => {
       const data2 = loadData()
-      const msg = data2.messages[conversationId]?.find(m => m.id === message.id)
+      const msg = data2.messages[conversationId]?.find((m) => m.id === message.id)
       if (msg) {
         msg.status = 'delivered'
         saveData(data2)
-        conv.participants.forEach(pid => {
-          io.to(`user:${pid}`).emit('message:status', { conversationId, messageId: message.id, status: 'delivered' })
+        conv.participants.forEach((pid) => {
+          io.to(`user:${pid}`).emit('message:status', {
+            conversationId,
+            messageId: message.id,
+            status: 'delivered',
+          })
         })
       }
     }, 500)
@@ -230,15 +270,90 @@ io.on('connection', (socket) => {
     const conv = data.conversations[conversationId]
     if (!conv) return
     const messages = data.messages[conversationId] || []
-    messages.forEach(m => {
+    messages.forEach((m) => {
       if (m.senderId !== socket.userId && m.status !== 'read') {
         m.status = 'read'
       }
     })
     saveData(data)
-    conv.participants.forEach(pid => {
+    conv.participants.forEach((pid) => {
       io.to(`user:${pid}`).emit('messages:read', { conversationId, userId: socket.userId })
     })
+  })
+
+  socket.on('message:edit', ({ conversationId, messageId, text }) => {
+    const data = loadData()
+    const conv = data.conversations[conversationId]
+    if (!conv) return
+    const msg = data.messages[conversationId]?.find((m) => m.id === messageId)
+    if (!msg || msg.senderId !== socket.userId) return
+    msg.text = text
+    msg.edited = true
+    conv.lastMessage = {
+      text,
+      senderId: socket.userId,
+      timestamp: msg.timestamp,
+      type: msg.type,
+    }
+    saveData(data)
+    conv.participants.forEach((pid) => {
+      io.to(`user:${pid}`).emit('message:edited', { conversationId, messageId, text })
+      io.to(`user:${pid}`).emit('conversation:updated', {
+        ...conv,
+        otherUser: data.users[conv.participants.find((p) => p !== pid)],
+      })
+    })
+  })
+
+  socket.on('message:delete', ({ conversationId, messageId }) => {
+    const data = loadData()
+    const conv = data.conversations[conversationId]
+    if (!conv) return
+    const msg = data.messages[conversationId]?.find((m) => m.id === messageId)
+    if (!msg || msg.senderId !== socket.userId) return
+    msg.deleted = true
+    msg.text = 'Pesan ini telah dihapus'
+    conv.lastMessage = {
+      text: 'Pesan dihapus',
+      senderId: socket.userId,
+      timestamp: msg.timestamp,
+    }
+    saveData(data)
+    conv.participants.forEach((pid) => {
+      io.to(`user:${pid}`).emit('message:deleted', { conversationId, messageId })
+      io.to(`user:${pid}`).emit('conversation:updated', {
+        ...conv,
+        otherUser: data.users[conv.participants.find((p) => p !== pid)],
+      })
+    })
+  })
+
+  socket.on('typing:start', ({ conversationId }) => {
+    const data = loadData()
+    const conv = data.conversations[conversationId]
+    if (!conv) return
+    const targetId = conv.participants.find((p) => p !== socket.userId)
+    if (targetId) {
+      io.to(`user:${targetId}`).emit('typing:status', {
+        conversationId,
+        userId: socket.userId,
+        typing: true,
+      })
+    }
+  })
+
+  socket.on('typing:stop', ({ conversationId }) => {
+    const data = loadData()
+    const conv = data.conversations[conversationId]
+    if (!conv) return
+    const targetId = conv.participants.find((p) => p !== socket.userId)
+    if (targetId) {
+      io.to(`user:${targetId}`).emit('typing:status', {
+        conversationId,
+        userId: socket.userId,
+        typing: false,
+      })
+    }
   })
 
   socket.on('disconnect', () => {
@@ -252,6 +367,16 @@ io.on('connection', (socket) => {
   })
 })
 
-server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`)
+const clientDist = path.join(__dirname, '..', 'client', 'dist')
+if (fs.existsSync(clientDist)) {
+  app.use(express.static(clientDist))
+  app.get('*', (req, res) => {
+    if (!req.path.startsWith('/api') && !req.path.startsWith('/uploads')) {
+      res.sendFile(path.join(clientDist, 'index.html'))
+    }
+  })
+}
+
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server running on http://0.0.0.0:${PORT}`)
 })

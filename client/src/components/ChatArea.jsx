@@ -1,10 +1,12 @@
-import React, { useRef, useEffect, useState } from 'react'
+import React, { useRef, useEffect } from 'react'
 import MessageBubble from './MessageBubble'
 import MessageInput from './MessageInput'
 
-export default function ChatArea({ activeConv, messages, user, onSend, getContactStatus }) {
+export default function ChatArea({
+  activeConv, messages, user, onSend, onTyping,
+  getContactStatus, typingUsers, onEditMessage, onDeleteMessage
+}) {
   const messagesEndRef = useRef(null)
-  const [showEmoji, setShowEmoji] = useState(false)
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -12,6 +14,7 @@ export default function ChatArea({ activeConv, messages, user, onSend, getContac
 
   const otherUser = activeConv?.otherUser
   const isOnline = otherUser ? getContactStatus(otherUser.id) : false
+  const isTyping = typingUsers?.[activeConv?.id]
 
   return (
     <div className="chat-area">
@@ -20,7 +23,7 @@ export default function ChatArea({ activeConv, messages, user, onSend, getContac
         <div className="chat-header-info">
           <div className="chat-header-name">{otherUser?.name || 'Unknown'}</div>
           <div className="chat-header-status">
-            {isOnline ? 'Online' : 'Offline'}
+            {isTyping ? 'mengetik...' : isOnline ? 'Online' : 'Offline'}
           </div>
         </div>
       </div>
@@ -32,12 +35,18 @@ export default function ChatArea({ activeConv, messages, user, onSend, getContac
             message={msg}
             isOwn={msg.senderId === user.id}
             showAvatar={i === 0 || messages[i - 1]?.senderId !== msg.senderId}
+            onEdit={(msgId, text) => onEditMessage(activeConv.id, msgId, text)}
+            onDelete={(msgId) => onDeleteMessage(activeConv.id, msgId)}
           />
         ))}
         <div ref={messagesEndRef} />
       </div>
 
-      <MessageInput onSend={onSend} />
+      <MessageInput
+        onSend={(text, type, extra) => onSend(text, type, extra)}
+        onTyping={onTyping}
+        conversationId={activeConv?.id}
+      />
     </div>
   )
 }

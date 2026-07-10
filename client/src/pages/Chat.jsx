@@ -12,6 +12,7 @@ export default function Chat() {
   const [activeConv, setActiveConv] = useState(null)
   const [messages, setMessages] = useState([])
   const [onlineUsers, setOnlineUsers] = useState({})
+  const [typingUsers, setTypingUsers] = useState({})
 
   const fetchContacts = useCallback(async () => {
     try {
@@ -76,15 +77,37 @@ export default function Chat() {
     })
 
     socket.on('message:status', ({ conversationId, messageId, status }) => {
-      setMessages(prev => prev.map(m =>
-        m.id === messageId ? { ...m, status } : m
-      ))
+      setMessages(prev =>
+        prev.map(m => (m.id === messageId ? { ...m, status } : m))
+      )
     })
 
     socket.on('messages:read', ({ conversationId }) => {
-      setMessages(prev => prev.map(m =>
-        m.senderId !== user.id && m.status !== 'read' ? { ...m, status: 'read' } : m
-      ))
+      setMessages(prev =>
+        prev.map(m =>
+          m.senderId !== user.id && m.status !== 'read' ? { ...m, status: 'read' } : m
+        )
+      )
+    })
+
+    socket.on('message:edited', ({ conversationId, messageId, text }) => {
+      setMessages(prev =>
+        prev.map(m => (m.id === messageId ? { ...m, text, edited: true } : m))
+      )
+    })
+
+    socket.on('message:deleted', ({ conversationId, messageId }) => {
+      setMessages(prev =>
+        prev.map(m =>
+          m.id === messageId
+            ? { ...m, deleted: true, text: 'Pesan ini telah dihapus' }
+            : m
+        )
+      )
+    })
+
+    socket.on('typing:status', ({ conversationId, typing }) => {
+      setTypingUsers(prev => ({ ...prev, [conversationId]: typing }))
     })
 
     return () => {
@@ -94,6 +117,9 @@ export default function Chat() {
       socket.off('message:new')
       socket.off('message:status')
       socket.off('messages:read')
+      socket.off('message:edited')
+      socket.off('message:deleted')
+      socket.off('typing:status')
     }
   }, [activeConv, user.id])
 
@@ -105,8 +131,8 @@ export default function Chat() {
   }, [activeConv])
 
   const startConversation = (targetUser) => {
-    const existing = conversations.find(c =>
-      c.participants?.includes(targetUser.id) && c.participants?.includes(user.id)
+    const existing = conversations.find(
+      c => c.participants?.includes(targetUser.id) && c.participants?.includes(user.id)
     )
     if (existing) {
       setActiveConv(existing)
@@ -127,10 +153,33 @@ export default function Chat() {
     fetchMessages(conv.id)
   }
 
-  const sendMessage = (text) => {
-    if (!activeConv || !text.trim()) return
+  const sendMessage = (text, type = 'text', extra = {}) => {
+    if (!activeConv || (!text.trim() && type === 'text')) return
     const socket = getSocket()
-    socket.emit('message:send', { conversationId: activeConv.id, text: text.trim() })
+    socket.emit('message:send', {
+      conversationId: activeConv.id,
+      text: type === 'text' ? text.trim() : extra.fileName || '',
+      type,
+      fileUrl: type !== 'text' ? text : undefined,
+      fileName: extra.fileName,
+      fileType: extra.fileType,
+    })
+  }
+
+  const handleTyping = (conversationId, isTyping) => {
+    const socket = getSocket()
+    if (!socket) return
+    socket.emit(isTyping ? 'typing:start' : 'typing:stop', { conversationId })
+  }
+
+  const editMessage = (conversationId, messageId, text) => {
+    const socket = getSocket()
+    socket.emit('message:edit', { conversationId, messageId, text })
+  }
+
+  const deleteMessage = (conversationId, messageId) => {
+    const socket = getSocket()
+    socket.emit('message:delete', { conversationId, messageId })
   }
 
   const getContactStatus = (contactId) => onlineUsers[contactId] ?? false
@@ -154,7 +203,11 @@ export default function Chat() {
             messages={messages}
             user={user}
             onSend={sendMessage}
+            onTyping={handleTyping}
             getContactStatus={getContactStatus}
+            typingUsers={typingUsers}
+            onEditMessage={editMessage}
+            onDeleteMessage={deleteMessage}
           />
         ) : (
           <WelcomeScreen user={user} />
