@@ -159,6 +159,7 @@ export default function WhatsAppChat() {
   const [loginMode, setLoginMode] = useState('qr')
   const [phoneNumber, setPhoneNumber] = useState('')
   const [pairingCode, setPairingCode] = useState(null)
+  const [copied, setCopied] = useState(false)
   const [pairLoading, setPairLoading] = useState(false)
   const [pairError, setPairError] = useState('')
   const [showCountryPicker, setShowCountryPicker] = useState(false)
@@ -236,7 +237,7 @@ export default function WhatsAppChat() {
   }
 
   const switchToQR = () => {
-    setLoginMode('qr'); setPairingCode(null); setPairError('')
+    setLoginMode('qr'); setPairingCode(null); setPairError(''); setCopied(false)
     setPhoneNumber('')
     socketRef.current?.emit('wa:start')
   }
@@ -529,6 +530,14 @@ export default function WhatsAppChat() {
                 }}>{ch}</span>
               ))}
             </div>
+
+            <button onClick={() => { navigator.clipboard.writeText(pairingCode); setCopied(true); setTimeout(() => setCopied(false), 2000) }} style={{
+              background: 'none', border: '1px solid var(--green-accent)', color: copied ? 'var(--green-accent)' : 'var(--green-dark)',
+              borderRadius: 9999, padding: '8px 24px', fontSize: 13, fontWeight: 500, cursor: 'pointer',
+              margin: '-16px 0 24px', alignSelf: 'center',
+            }}>
+              {copied ? 'Tersalin!' : 'Salin kode'}
+            </button>
 
             {/* Steps */}
             <ol style={{ listStyle: 'none', padding: 0, margin: '0 0 32px' }}>
