@@ -19,6 +19,7 @@ let _io = null
 let resolveSockReady = null
 let cachedVersion = null
 let _restartingAfterPairing = false
+let _pendingPairingRestart = false
 
 async function getVersion() {
   if (!cachedVersion) {
@@ -47,6 +48,10 @@ function waitForSockReady(timeout = 8000) {
   })
 }
 
+export function resetWA() {
+  client.isInitialized = false
+}
+
 export async function initWA(io) {
   if (client.isInitialized) return client
   _io = io
@@ -58,7 +63,7 @@ export async function initWA(io) {
 
   let { state } = await useMultiFileAuthState(SESSION_DIR)
 
-  if (state.creds && !state.creds.registered) {
+  if (state.creds && state.creds.me && !state.creds.registered) {
     fs.rmSync(SESSION_DIR, { recursive: true, force: true })
     fs.mkdirSync(SESSION_DIR, { recursive: true })
     const fresh = await useMultiFileAuthState(SESSION_DIR)
@@ -79,7 +84,8 @@ export async function initWA(io) {
   sock.ev.on('creds.update', (creds) => {
     if (!fs.existsSync(SESSION_DIR)) fs.mkdirSync(SESSION_DIR, { recursive: true })
     fs.writeFileSync(path.join(SESSION_DIR, 'creds.json'), JSON.stringify(creds, null, 2))
-    if (creds.registered && !client.isConnected) {
+    if (creds.registered && _pendingPairingRestart) {
+      _pendingPairingRestart = false
       console.log('[WA] Phone pairing completed, restarting connection...')
       _restartingAfterPairing = true
       client.qrCode = null
@@ -124,6 +130,8 @@ export async function initWA(io) {
       } else {
         client.user = null
         client.qrCode = null
+        client.isInitialized = false
+        if (fs.existsSync(SESSION_DIR)) fs.rmSync(SESSION_DIR, { recursive: true, force: true })
         io.emit('wa:loggedOut')
       }
     }
@@ -194,6 +202,8 @@ export async function requestPairingCode(phoneNumber) {
       throw new Error('Kode tidak valid dari server WhatsApp')
     }
     console.log(`[PAIR] Code received (${code.length} chars): ${code.substring(0, 4)}... total=${Date.now() - t0}ms`)
+    _pendingPairingRestart = true
+    setTimeout(() => { _pendingPairingRestart = false }, 60000)
     return code
   } catch (e) {
     console.error(`[PAIR] Error for ${phoneNumber} at ${Date.now() - t0}ms: ${e.message}`)

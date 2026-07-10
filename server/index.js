@@ -5,7 +5,7 @@ import { Server } from 'socket.io'
 import path from 'path'
 import fs from 'fs'
 import { fileURLToPath } from 'url'
-import { initWA, sendWAMessage, logoutWA, getWAStatus, requestPairingCode } from './whatsapp.js'
+import { initWA, sendWAMessage, logoutWA, getWAStatus, requestPairingCode, resetWA } from './whatsapp.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const PORT = process.env.PORT || 3001
@@ -69,7 +69,11 @@ io.on('connection', (socket) => {
   socket.on('wa:start', async () => {
     if (!waClient || !waClient.isInitialized || !waClient.sock) {
       waClient = null
-      await startWA()
+      resetWA()
+      try { await startWA() } catch (e) {
+        console.error('[wa:start] init error:', e.message)
+        setTimeout(() => { resetWA(); startWA() }, 5000)
+      }
     }
     if (waClient?.qrCode) {
       socket.emit('wa:qr', waClient.qrCode)
