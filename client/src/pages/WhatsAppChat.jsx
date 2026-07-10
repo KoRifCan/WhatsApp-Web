@@ -165,12 +165,10 @@ export default function WhatsAppChat() {
   const [countrySearch, setCountrySearch] = useState('')
   const [selectedCountry, setSelectedCountry] = useState(countries[0])
   const [mobileView, setMobileView] = useState('list')
-  const [qrAge, setQrAge] = useState(0)
   const socketRef = useRef(null)
   const loginModeRef = useRef(loginMode)
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
-  const qrTsRef = useRef(null)
 
   const toggleTheme = useCallback(() => {
     setTheme((prev) => {
@@ -215,18 +213,6 @@ export default function WhatsAppChat() {
 
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages, activeJid])
   useEffect(() => { if (activeJid && inputRef.current) inputRef.current.focus() }, [activeJid])
-
-  useEffect(() => {
-    if (qrCode) qrTsRef.current = Date.now()
-  }, [qrCode])
-
-  useEffect(() => {
-    if (!qrCode) return
-    const id = setInterval(() => {
-      setQrAge(Math.floor((Date.now() - qrTsRef.current) / 1000))
-    }, 1000)
-    return () => clearInterval(id)
-  }, [qrCode])
 
   const sendMessage = (e) => {
     e.preventDefault()
@@ -347,9 +333,7 @@ export default function WhatsAppChat() {
                   </svg>
                 </div>
               </div>
-              <div style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>
-                Kode QR: {qrAge} detik
-              </div>
+
               <button onClick={() => setLoginMode('phone')} style={{
                 background: 'none', border: 'none', color: 'var(--green-dark)', cursor: 'pointer',
                 fontSize: 12.5, fontWeight: 500, display: 'inline-flex', alignItems: 'center', padding: 0,
@@ -457,11 +441,20 @@ export default function WhatsAppChat() {
               />
             </div>
 
-            {pairError && <div style={{
-              background: 'rgba(239, 83, 80, 0.12)', color: '#ef5350',
-              padding: '10px 16px', borderRadius: 12, fontSize: 13,
-              marginBottom: 16, width: '100%', textAlign: 'center',
-            }}>{pairError}</div>}
+            {pairError && <>
+              <div style={{
+                background: 'rgba(239, 83, 80, 0.12)', color: '#ef5350',
+                padding: '10px 16px', borderRadius: 12, fontSize: 13,
+                marginBottom: 8, width: '100%', textAlign: 'center',
+              }}>{pairError}</div>
+              <button onClick={handlePair} disabled={pairLoading} style={{
+                background: 'none', border: '1px solid var(--green-accent)', color: 'var(--green-accent)',
+                borderRadius: 9999, padding: '6px 20px', fontSize: 13, fontWeight: 500,
+                cursor: pairLoading ? 'not-allowed' : 'pointer', marginBottom: 12, opacity: pairLoading ? 0.6 : 1,
+              }}>
+                {pairLoading ? t('phone.loading') : 'Coba lagi'}
+              </button>
+            </>}
 
             <button onClick={handlePair} disabled={pairLoading || !phoneNumber.trim()} style={{
               width: '100%', height: 40, background: pairLoading || !phoneNumber.trim() ? 'rgba(0,168,132,0.6)' : 'var(--green-accent)',

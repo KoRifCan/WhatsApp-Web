@@ -14,6 +14,7 @@ let client = {
   isInitialized: false,
   user: null,
 }
+let _io = null
 
 export function getWAStatus() {
   return {
@@ -25,6 +26,7 @@ export function getWAStatus() {
 
 export async function initWA(io) {
   if (client.isInitialized) return client
+  _io = io
   client.isInitialized = true
 
   if (!fs.existsSync(SESSION_DIR)) {
@@ -115,9 +117,30 @@ export async function initWA(io) {
 }
 
 export async function requestPairingCode(phoneNumber) {
-  if (!client.sock) throw new Error('WhatsApp not initialized')
-  const code = await client.sock.requestPairingCode(phoneNumber)
-  return code
+  if (!client.sock || !client.isInitialized) {
+    throw new Error('WhatsApp belum siap, silakan coba lagi')
+  }
+  if (client.isConnected) {
+    throw new Error('Perangkat sudah tertaut. Silakan logout terlebih dahulu.')
+  }
+  let attempts = 0
+  while (attempts < 2) {
+    try {
+      const code = await client.sock.requestPairingCode(phoneNumber)
+      return code
+    } catch (e) {
+      attempts++
+      if (attempts >= 2) throw e
+      const msg = e.message || ''
+      if (msg.includes('Connection Closed') || msg.includes('Stream') || msg.includes('connection')) {
+        client.isInitialized = false
+        await initWA(_io)
+        await new Promise(r => setTimeout(r, 3000))
+      } else {
+        throw e
+      }
+    }
+  }
 }
 
 export async function sendWAMessage(jid, text) {
