@@ -4,12 +4,14 @@
   "type": "module",
   "scripts": {
     "start": "node index.js",
-    "dev": "node --watch index.js"
+    "dev": "node --watch index.js",
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "@whiskeysockets/baileys": "^7.0.0-rc13",
     "cors": "^2.8.5",
     "express": "^4.21.0",
+    "patch-package": "^8.0.1",
     "pino": "^10.3.1",
     "qrcode": "^1.5.4",
     "socket.io": "^4.8.0"
