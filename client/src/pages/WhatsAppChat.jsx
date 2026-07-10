@@ -224,8 +224,13 @@ export default function WhatsAppChat() {
   const handlePair = (e) => {
     e.preventDefault()
     const dial = selectedCountry.dial.replace('+', '')
-    const full = dial + phoneNumber.replace(/[^0-9]/g, '')
+    const local = phoneNumber.replace(/[^0-9]/g, '')
+    const full = dial + local
     if (!full) return
+    if (full.length < 8) {
+      setPairError(`Nomor terlalu pendek (minimal 8 digit, saat ini ${full.length} digit)`)
+      return
+    }
     setPairLoading(true); setPairError(''); setPairingCode(null)
     socketRef.current.emit('wa:pair', { phoneNumber: full })
   }
