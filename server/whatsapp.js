@@ -20,7 +20,7 @@ let _io = null
 let resolveSockReady = null
 let cachedVersion = null
 let _restartingAfterPairing = false
-let _pendingPairingRestart = false
+let _credsWereRegistered = false
 
 const FALLBACK_VERSION = [2, 3000, 1035194821]
 
@@ -80,6 +80,8 @@ export async function initWA(io) {
 
     let { state } = await useMultiFileAuthState(SESSION_DIR)
 
+    _credsWereRegistered = state.creds?.registered || false
+
     if (state.creds && state.creds.me && !state.creds.registered) {
       fs.rmSync(SESSION_DIR, { recursive: true, force: true })
       fs.mkdirSync(SESSION_DIR, { recursive: true })
@@ -118,7 +120,8 @@ export async function initWA(io) {
   sock.ev.on('creds.update', (creds) => {
     if (!fs.existsSync(SESSION_DIR)) fs.mkdirSync(SESSION_DIR, { recursive: true })
     fs.writeFileSync(path.join(SESSION_DIR, 'creds.json'), JSON.stringify(creds, BufferJSON.replacer, 2))
-    if (creds.registered && _pendingPairingRestart) {
+    if (creds.registered && !_credsWereRegistered) {
+      _credsWereRegistered = true
       _pendingPairingRestart = false
       console.log('[WA] Phone pairing completed, restarting connection...')
       _restartingAfterPairing = true
@@ -169,6 +172,9 @@ export async function initWA(io) {
         client.user = null
         client.qrCode = null
         client.isInitialized = false
+        client.contacts = []
+        client.chats = []
+        _credsWereRegistered = false
         if (fs.existsSync(SESSION_DIR)) fs.rmSync(SESSION_DIR, { recursive: true, force: true })
         io.emit('wa:loggedOut')
       }
@@ -260,8 +266,6 @@ export async function requestPairingCode(phoneNumber) {
       throw new Error('Kode tidak valid dari server WhatsApp')
     }
     console.log(`[PAIR] Code received (${code.length} chars): ${code.substring(0, 4)}... total=${Date.now() - t0}ms`)
-    _pendingPairingRestart = true
-    setTimeout(() => { _pendingPairingRestart = false }, 60000)
     return code
   } catch (e) {
     console.error(`[PAIR] Error for ${phoneNumber} at ${Date.now() - t0}ms: ${e.message}`)
@@ -284,6 +288,8 @@ export async function logoutWA() {
   client.isInitialized = false
   client.user = null
   client.contacts = []
+  client.chats = []
+  _credsWereRegistered = false
   const dir = SESSION_DIR
   if (fs.existsSync(dir)) fs.rmSync(dir, { recursive: true, force: true })
 }
