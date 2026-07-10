@@ -21,6 +21,7 @@ let resolveSockReady = null
 let cachedVersion = null
 let _restartingAfterPairing = false
 let _credsWereRegistered = false
+let _reconnectAttempts = 0
 
 const FALLBACK_VERSION = [2, 3000, 1035194821]
 
@@ -96,11 +97,12 @@ export async function initWA(io) {
       version,
       auth: state,
       printQRInTerminal: false,
-      logger: pino({ level: 'silent' }),
-      browser: ['Ubuntu', 'Chrome', '22.04.4'],
+      logger: pino({ level: 'warn' }),
+      browser: ['Windows', 'Chrome', '120.0.0.0'],
       syncFullHistory: true,
       connectTimeoutMs: 60000,
       qrTimeout: 120000,
+      keepAliveIntervalMs: 10000,
     })
 
     client.sock = sock
@@ -136,6 +138,7 @@ export async function initWA(io) {
     const { connection, lastDisconnect, qr } = update
     if (qr) {
       clearInitTimer()
+      _reconnectAttempts = 0
       client.qrCode = await toDataURL(qr, { width: 300, margin: 2 })
       client.isConnected = false
       io.emit('wa:qr', client.qrCode)
@@ -146,6 +149,7 @@ export async function initWA(io) {
     }
     if (connection === 'open') {
       clearInitTimer()
+      _reconnectAttempts = 0
       client.isConnected = true
       client.qrCode = null
       client.user = sock.user
@@ -164,10 +168,13 @@ export async function initWA(io) {
       client.sock = null
       if (_restartingAfterPairing) return
       if (statusCode !== DisconnectReason.loggedOut) {
+        _reconnectAttempts++
+        const delay = Math.min(5000 * Math.pow(2, _reconnectAttempts), 60000)
+        console.log(`[WA] Reconnecting in ${delay}ms (attempt ${_reconnectAttempts})`)
         setTimeout(() => {
           client.isInitialized = false
           initWA(io)
-        }, 5000)
+        }, delay)
       } else {
         client.user = null
         client.qrCode = null
