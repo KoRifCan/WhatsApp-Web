@@ -44,7 +44,13 @@ countries.sort((a, b) => (a.priority || 99) - (b.priority || 99))
 
 const WA_ICON = (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--green-icon)">
-    <path d="M12.004 2c-5.517 0-9.996 4.479-9.996 9.995 0 1.764.459 3.419 1.258 4.861l-1.262 4.609 4.716-1.237c1.401.763 3.001 1.199 4.704 1.199 5.518 0 9.996-4.479 9.996-9.995S17.522 2 12.004 2zM6.836 16.929l-.273-.434c-.742-1.181-1.134-2.545-1.134-3.957 0-4.108 3.342-7.45 7.451-7.45 4.109 0 7.451 3.342 7.451 7.45s-3.342 7.451-7.451 7.451c-1.353 0-2.68-.363-3.839-1.05l-.454-.27-2.846.746.746-2.723z"/>
+    <path d="M12.004 2c-5.517 0-9.996 4.479-9.996 9.995 0 1.764.459 3.419 1.258 4.861l-1.262 4.609 4.716-1.237c1.401.763 3.001 1.199 4.704 1.199 5.518 0 9.996-4.479 9.996-9.995S17.522 2 12.004 2z"/>
+  </svg>
+)
+
+const WA_ICON_WHITE = (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff">
+    <path d="M12.004 2c-5.517 0-9.996 4.479-9.996 9.995 0 1.764.459 3.419 1.258 4.861l-1.262 4.609 4.716-1.237c1.401.763 3.001 1.199 4.704 1.199 5.518 0 9.996-4.479 9.996-9.995S17.522 2 12.004 2z"/>
   </svg>
 )
 
@@ -198,7 +204,25 @@ export default function WhatsAppChat() {
       else if (s.hasQR) socket.emit('wa:start')
     })
     socket.on('wa:qr', (d) => { if (loginModeRef.current === 'qr') setQrCode(d) })
-    socket.on('wa:ready', ({ user }) => { setConnected(true); setQrCode(null); setPairingCode(null); setWaUser(user) })
+    socket.on('wa:ready', ({ user }) => { setConnected(true); setQrCode(null); setPairingCode(null); setWaUser(user); socket.emit('wa:getChats'); socket.emit('wa:getContacts') })
+    socket.on('wa:chats', (chats) => {
+      setContacts(prev => {
+        const merged = [...chats]
+        for (const c of prev) {
+          if (!merged.find(m => m.jid === c.jid)) merged.push(c)
+        }
+        return merged
+      })
+    })
+    socket.on('wa:contacts', (contacts) => {
+      setContacts(prev => {
+        const merged = [...prev]
+        for (const c of contacts) {
+          if (!merged.find(m => m.jid === c.jid)) merged.push(c)
+        }
+        return merged
+      })
+    })
     socket.on('wa:message', ({ from, message }) => {
       setMessages(p => ({ ...p, [from]: [...(p[from] || []), message] }))
     })
@@ -324,11 +348,7 @@ export default function WhatsAppChat() {
               <div className="wa-qr-wrap">
                 <img src={qrCode} alt="QR" style={{ width: '100%', height: '100%', objectFit: 'contain', opacity: 0.9 }} />
                 <div className="wa-qr-center-icon">
-                  <svg viewBox="0 0 39 39" width="21" height="21">
-                    <path d="M10.7 32.8l.6.3c2.5 1.5 5.3 2.2 8.1 2.2 8.8 0 16-7.2 16-16 0-4.2-1.7-8.3-4.7-11.3s-7-4.7-11.3-4.7c-8.8 0-16 7.2-15.9 16 0 3 0.8 5.9 2.4 8.4l0.3 0.5-1.6 5.9 6-1.5z" fill="#25D366"/>
-                    <path d="M32.4 6.4C29 2.9 24.3 1 19.5 1 9.3 1 1.1 9.3 1.2 19.4c0 3.2 0.9 6.3 2.4 9.1L1 38l9.7-2.5c2.7 1.5 5.7 2.2 8.7 2.2 10.1 0 18.3-8.3 18.3-18.4 0-4.9-1.9-9.5-5.3-12.9zM19.5 34.6c-2.7 0-5.4-0.7-7.7-2.1l-0.6-0.3-5.8 1.5L6.9 28l-0.4-0.6c-1.5-2.4-2.3-5.2-2.3-8 0-8.4 6.8-15.2 15.2-15.2 4.1 0 7.9 1.6 10.8 4.5 2.9 2.9 4.5 6.7 4.5 10.8 0 8.4-6.8 15.1-15.2 15.1z" fill="#25D366"/>
-                    <path d="M14.6 11.4c-0.3-0.8-0.7-0.8-1-0.8s-0.9 0-1.4 0-1.3 0.6-1.9 1.5c-0.6 0.9-2.1 2.1-2.1 5s2.5 5.8 2.9 6.2c0.3 0.4 5 7.6 12.1 10.3 1.7 0.6 3 1 4.1 1.3 1.7 0.5 3.3 0.4 4.5 0.2 1.4-0.2 4.3-1.7 4.9-3.4s0.6-3.1 0.4-3.4c-0.2-0.3-0.7-0.5-1.5-0.9s-4.5-2.2-5.2-2.5-1.2-0.4-1.7 0.4c-0.5 0.9-1.8 2.5-2.2 3-0.3 0.4-0.7 0.5-1.4 0.2-2.5-1.1-4.6-2.5-6.4-4.3-1.3-1.3-2.1-2.5-2.4-3.3-0.3-0.8 0-1.2 0.2-1.5 0.2-0.3 0.5-0.6 0.7-0.9s0.3-0.6 0.5-0.9c0.2-0.3 0.1-0.6 0-0.9-0.1-0.3-1.7-4.1-2.3-5.6z" fill="#fff"/>
-                  </svg>
+                  {WA_ICON_WHITE}
                 </div>
               </div>
 

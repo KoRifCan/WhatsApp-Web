@@ -232,13 +232,11 @@ body {
   position: absolute;
   width: 36px;
   height: 36px;
-  background: #fff;
+  background: var(--green-icon);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-  border: 1px solid #e9edef;
 }
 
 /* Link button */
