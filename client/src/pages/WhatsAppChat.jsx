@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { io } from 'socket.io-client'
+import config from '../config'
 
-const SOCKET_URL = '/'
+const SOCKET_URL = config.backendURL || '/'
 
 export default function WhatsAppChat() {
   const [connected, setConnected] = useState(false)
