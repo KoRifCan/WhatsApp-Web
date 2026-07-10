@@ -21,7 +21,7 @@ let cachedVersion = null
 let _restartingAfterPairing = false
 let _pendingPairingRestart = false
 
-const FALLBACK_VERSION = [2, 3000, 1017891836]
+const FALLBACK_VERSION = [2, 3000, 1035194821]
 
 async function getVersion() {
   if (!cachedVersion) {
@@ -97,6 +97,17 @@ export async function initWA(io) {
 
   client.sock = sock
 
+  let initTimer = setTimeout(() => {
+    console.log('[WA] No QR or connection after 25s, restarting...')
+    client.isInitialized = false
+    client.qrCode = null
+    client.sock = null
+    try { sock.end?.() } catch {}
+    setTimeout(() => initWA(io), 1000)
+  }, 25000)
+
+  const clearInitTimer = () => { try { clearTimeout(initTimer) } catch {} }
+
   sock.ev.on('creds.update', (creds) => {
     if (!fs.existsSync(SESSION_DIR)) fs.mkdirSync(SESSION_DIR, { recursive: true })
     fs.writeFileSync(path.join(SESSION_DIR, 'creds.json'), JSON.stringify(creds, null, 2))
@@ -114,6 +125,7 @@ export async function initWA(io) {
   sock.ev.on('connection.update', async (update) => {
     const { connection, lastDisconnect, qr } = update
     if (qr) {
+      clearInitTimer()
       client.qrCode = await toDataURL(qr, { width: 300, margin: 2 })
       client.isConnected = false
       io.emit('wa:qr', client.qrCode)
@@ -123,6 +135,7 @@ export async function initWA(io) {
       }
     }
     if (connection === 'open') {
+      clearInitTimer()
       client.isConnected = true
       client.qrCode = null
       client.user = sock.user
@@ -131,6 +144,9 @@ export async function initWA(io) {
         resolveSockReady()
         resolveSockReady = null
       }
+    }
+    if (connection === 'close') {
+      clearInitTimer()
     }
     if (connection === 'close') {
       client.isConnected = false
