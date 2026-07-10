@@ -253,7 +253,7 @@ export default function WhatsAppChat() {
   }
 
   const handlePair = (e) => {
-    e.preventDefault()
+    if (e?.preventDefault) e.preventDefault()
     const dial = selectedCountry.dial.replace('+', '')
     const local = phoneNumber.replace(/[^0-9]/g, '')
     const full = dial + local
@@ -408,7 +408,7 @@ export default function WhatsAppChat() {
                 type="tel"
                 value={phoneNumber}
                 onChange={e => setPhoneNumber(e.target.value.replace(/[^0-9]/g, ''))}
-                onKeyDown={e => { if (e.key === 'Enter' && phoneNumber.trim().length >= 8 && !pairLoading) handlePair() }}
+                onKeyDown={e => { if (e.key === 'Enter' && phoneNumber.trim().length >= 8 && !pairLoading) handlePair(e) }}
                 placeholder={t('phone.label')}
                 autoFocus
                 disabled={pairLoading}
