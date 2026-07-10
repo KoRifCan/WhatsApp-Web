@@ -19,7 +19,6 @@ let client = {
 let _io = null
 let resolveSockReady = null
 let cachedVersion = null
-let _restartingAfterPairing = false
 let _credsWereRegistered = false
 let _reconnectAttempts = 0
 
