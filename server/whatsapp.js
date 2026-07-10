@@ -167,6 +167,10 @@ export async function initWA(io) {
         console.log(`[WA] Reconnecting in ${delay}ms (attempt ${_reconnectAttempts})`)
         setTimeout(() => {
           if (_credsWereRegistered) {
+            const credsPath = path.join(SESSION_DIR, 'creds.json')
+            let registeredInFile = false
+            try { registeredInFile = JSON.parse(fs.readFileSync(credsPath, 'utf-8')).registered === true } catch {}
+            console.log('[WA] _credsWereRegistered=true, creds.json.registered=', registeredInFile)
             client.isInitialized = false
             initWA(io)
           } else if (fs.existsSync(SESSION_DIR) && client.user === null) {
