@@ -1,4 +1,4 @@
-import { makeWASocket, useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion } from '@whiskeysockets/baileys'
+import { makeWASocket, useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion, BufferJSON } from '@whiskeysockets/baileys'
 import { toDataURL } from 'qrcode'
 import path from 'path'
 import fs from 'fs'
@@ -14,6 +14,7 @@ let client = {
   isInitialized: false,
   user: null,
   contacts: [],
+  chats: [],
 }
 let _io = null
 let resolveSockReady = null
@@ -45,6 +46,10 @@ export function getWAStatus() {
     hasQR: !!client.qrCode,
     user: client.user,
   }
+}
+
+export function getChats() {
+  return client.chats || []
 }
 
 function waitForSockReady(timeout = 8000) {
@@ -86,16 +91,18 @@ export async function initWA(io) {
     console.log('[WA] Using Baileys version:', version.join('.'))
 
     const sock = makeWASocket({
-    version: await getVersion(),
-    auth: state,
-    printQRInTerminal: false,
-    logger: pino({ level: 'silent' }),
-    browser: ['Ubuntu', 'Chrome', '22.04.4'],
-    syncFullHistory: false,
-    connectTimeoutMs: 20000,
-  })
+      version,
+      auth: state,
+      printQRInTerminal: false,
+      logger: pino({ level: 'silent' }),
+      browser: ['Ubuntu', 'Chrome', '22.04.4'],
+      syncFullHistory: true,
+      connectTimeoutMs: 60000,
+      qrTimeout: 120000,
+    })
 
-  client.sock = sock
+    client.sock = sock
+    console.log('[WA] Socket created, waiting for QR/connection...')
 
   let initTimer = setTimeout(() => {
     console.log('[WA] No QR or connection after 25s, restarting...')
@@ -110,7 +117,7 @@ export async function initWA(io) {
 
   sock.ev.on('creds.update', (creds) => {
     if (!fs.existsSync(SESSION_DIR)) fs.mkdirSync(SESSION_DIR, { recursive: true })
-    fs.writeFileSync(path.join(SESSION_DIR, 'creds.json'), JSON.stringify(creds, null, 2))
+    fs.writeFileSync(path.join(SESSION_DIR, 'creds.json'), JSON.stringify(creds, BufferJSON.replacer, 2))
     if (creds.registered && _pendingPairingRestart) {
       _pendingPairingRestart = false
       console.log('[WA] Phone pairing completed, restarting connection...')
@@ -147,13 +154,12 @@ export async function initWA(io) {
     }
     if (connection === 'close') {
       clearInitTimer()
-    }
-    if (connection === 'close') {
+      const statusCode = lastDisconnect?.error?.output?.statusCode
+      console.log('[WA] Connection closed. statusCode:', statusCode, 'error:', lastDisconnect?.error?.message || 'none')
       client.isConnected = false
       client.qrCode = null
       client.sock = null
       if (_restartingAfterPairing) return
-      const statusCode = lastDisconnect?.error?.output?.statusCode
       if (statusCode !== DisconnectReason.loggedOut) {
         setTimeout(() => {
           client.isInitialized = false
@@ -197,6 +203,19 @@ export async function initWA(io) {
       .map((c) => ({ jid: c.id, name: c.name || c.notify || c.id.split('@')[0] }))
     client.contacts = list
     io.emit('wa:contacts', list)
+  })
+
+  sock.ev.on('chats.upsert', (chats) => {
+    const list = chats
+      .filter((c) => c.id.endsWith('@s.whatsapp.net'))
+      .map((c) => ({
+        jid: c.id,
+        name: c.name || c.id.split('@')[0],
+        timestamp: c.conversationTimestamp ? new Date((c.conversationTimestamp || 0) * 1000).toISOString() : null,
+        unread: c.unreadCount || 0,
+      }))
+    client.chats = list
+    io.emit('wa:chats', list)
   })
 
   return client

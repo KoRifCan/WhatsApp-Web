@@ -5,7 +5,7 @@ import { Server } from 'socket.io'
 import path from 'path'
 import fs from 'fs'
 import { fileURLToPath } from 'url'
-import { initWA, sendWAMessage, logoutWA, getWAStatus, requestPairingCode, resetWA } from './whatsapp.js'
+import { initWA, sendWAMessage, logoutWA, getWAStatus, requestPairingCode, resetWA, getChats } from './whatsapp.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const PORT = process.env.PORT || 3001
@@ -83,7 +83,19 @@ io.on('connection', (socket) => {
       if (waClient.contacts?.length > 0) {
         socket.emit('wa:contacts', waClient.contacts)
       }
+      if (waClient.chats?.length > 0) {
+        socket.emit('wa:chats', waClient.chats)
+      }
     }
+  })
+
+  socket.on('wa:getChats', () => {
+    const chats = getChats()
+    if (chats.length > 0) socket.emit('wa:chats', chats)
+  })
+
+  socket.on('wa:getContacts', () => {
+    if (waClient?.contacts?.length > 0) socket.emit('wa:contacts', waClient.contacts)
   })
 })
 
