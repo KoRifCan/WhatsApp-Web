@@ -166,6 +166,7 @@ export default function WhatsAppChat() {
   const [countrySearch, setCountrySearch] = useState('')
   const [selectedCountry, setSelectedCountry] = useState(countries[0])
   const [mobileView, setMobileView] = useState('list')
+  const [loadingTimeout, setLoadingTimeout] = useState(false)
   const socketRef = useRef(null)
   const loginModeRef = useRef(loginMode)
   const messagesEndRef = useRef(null)
@@ -214,6 +215,15 @@ export default function WhatsAppChat() {
 
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages, activeJid])
   useEffect(() => { if (activeJid && inputRef.current) inputRef.current.focus() }, [activeJid])
+
+  // loading timeout
+  useEffect(() => {
+    if (!connected && !qrCode) {
+      const t = setTimeout(() => setLoadingTimeout(true), 20000)
+      return () => clearTimeout(t)
+    }
+    setLoadingTimeout(false)
+  }, [connected, qrCode])
 
   const sendMessage = (e) => {
     e.preventDefault()
@@ -493,8 +503,14 @@ export default function WhatsAppChat() {
             <span style={{ color: 'var(--green-icon)', fontWeight: 600, fontSize: 21, letterSpacing: '0.3px' }}>WhatsApp</span>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20, color: 'var(--text-secondary)', fontSize: 14 }}>
-            <div className="spinner" />
-            <p>{t('loading')}</p>
+            {loadingTimeout ? null : <div className="spinner" />}
+            <p>{loadingTimeout ? 'Gagal terhubung ke server WhatsApp' : t('loading')}</p>
+            {loadingTimeout && (
+              <button onClick={() => { setLoadingTimeout(false); socketRef.current?.emit('wa:start') }}
+                className="wa-auth-btn" style={{ maxWidth: 200 }}>
+                Coba lagi
+              </button>
+            )}
           </div>
           <p style={{ color: 'var(--text-secondary)', fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, opacity: 0.85 }}>
             {LOCK_ICON}
