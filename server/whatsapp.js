@@ -18,6 +18,7 @@ let client = {
 let _io = null
 let resolveSockReady = null
 let cachedVersion = null
+let _restartingAfterPairing = false
 
 async function getVersion() {
   if (!cachedVersion) {
@@ -80,12 +81,11 @@ export async function initWA(io) {
     fs.writeFileSync(path.join(SESSION_DIR, 'creds.json'), JSON.stringify(creds, null, 2))
     if (creds.registered && !client.isConnected) {
       console.log('[WA] Phone pairing completed, restarting connection...')
-      client.isConnected = false
+      _restartingAfterPairing = true
       client.qrCode = null
-      client.sock = null
       client.isInitialized = false
       try { sock.end?.() } catch {}
-      setTimeout(() => initWA(_io), 2000)
+      setTimeout(() => { _restartingAfterPairing = false; initWA(_io) }, 2000)
     }
   })
 
@@ -114,6 +114,7 @@ export async function initWA(io) {
       client.isConnected = false
       client.qrCode = null
       client.sock = null
+      if (_restartingAfterPairing) return
       const statusCode = lastDisconnect?.error?.output?.statusCode
       if (statusCode !== DisconnectReason.loggedOut) {
         setTimeout(() => {
