@@ -36,6 +36,10 @@ app.get('/api/wa/status', (req, res) => {
   res.json(getWAStatus())
 })
 
+app.get('/healthz', (req, res) => {
+  res.send('ok')
+})
+
 app.post('/api/wa/logout', async (req, res) => {
   await logoutWA()
   waClient = null
