@@ -15,6 +15,7 @@ let client = {
   user: null,
 }
 let _io = null
+let resolveSockReady = null
 
 export function getWAStatus() {
   return {
@@ -22,6 +23,18 @@ export function getWAStatus() {
     hasQR: !!client.qrCode,
     user: client.user,
   }
+}
+
+function waitForSockReady(timeout = 15000) {
+  if (client.sock && client.qrCode) return Promise.resolve()
+  if (client.isConnected) return Promise.resolve()
+  return new Promise((resolve, reject) => {
+    resolveSockReady = resolve
+    setTimeout(() => {
+      resolveSockReady = null
+      reject(new Error('Timeout menunggu koneksi WhatsApp'))
+    }, timeout)
+  })
 }
 
 export async function initWA(io) {
@@ -60,15 +73,24 @@ export async function initWA(io) {
       client.qrCode = await toDataURL(qr, { width: 300, margin: 2 })
       client.isConnected = false
       io.emit('wa:qr', client.qrCode)
+      if (resolveSockReady) {
+        resolveSockReady()
+        resolveSockReady = null
+      }
     }
     if (connection === 'open') {
       client.isConnected = true
       client.qrCode = null
       client.user = sock.user
       io.emit('wa:ready', { user: sock.user })
+      if (resolveSockReady) {
+        resolveSockReady()
+        resolveSockReady = null
+      }
     }
     if (connection === 'close') {
       client.isConnected = false
+      client.sock = null
       const statusCode = lastDisconnect?.error?.output?.statusCode
       if (statusCode !== DisconnectReason.loggedOut) {
         setTimeout(() => {
@@ -118,28 +140,28 @@ export async function initWA(io) {
 
 export async function requestPairingCode(phoneNumber) {
   if (!client.sock || !client.isInitialized) {
-    throw new Error('WhatsApp belum siap, silakan coba lagi')
+    client.isInitialized = false
+    await initWA(_io)
+    await waitForSockReady()
   }
   if (client.isConnected) {
     throw new Error('Perangkat sudah tertaut. Silakan logout terlebih dahulu.')
   }
-  let attempts = 0
-  while (attempts < 2) {
-    try {
-      const code = await client.sock.requestPairingCode(phoneNumber)
-      return code
-    } catch (e) {
-      attempts++
-      if (attempts >= 2) throw e
-      const msg = e.message || ''
-      if (msg.includes('Connection Closed') || msg.includes('Stream') || msg.includes('connection')) {
-        client.isInitialized = false
-        await initWA(_io)
-        await new Promise(r => setTimeout(r, 3000))
-      } else {
-        throw e
-      }
+  await waitForSockReady()
+  if (!client.sock) {
+    throw new Error('Koneksi WhatsApp terputus, silakan coba lagi')
+  }
+  console.log(`[PAIR] Requesting code for ${phoneNumber}...`)
+  try {
+    const code = await client.sock.requestPairingCode(phoneNumber)
+    if (!code || code.length < 4) {
+      throw new Error('Kode tidak valid dari server WhatsApp')
     }
+    console.log(`[PAIR] Code received (${code.length} chars): ${code.substring(0, 4)}...`)
+    return code
+  } catch (e) {
+    console.error(`[PAIR] Error for ${phoneNumber}: ${e.message}`)
+    throw e
   }
 }
 
