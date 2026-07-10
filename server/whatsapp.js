@@ -5,31 +5,33 @@ import fs from 'fs'
 import pino from 'pino'
 
 const __dirname = path.dirname(new URL(import.meta.url).pathname)
-const SESSIONS_DIR = path.join(__dirname, 'wa_sessions')
+const SESSION_DIR = path.join(__dirname, 'wa_session')
 
-if (!fs.existsSync(SESSIONS_DIR)) {
-  fs.mkdirSync(SESSIONS_DIR, { recursive: true })
+let client = {
+  sock: null,
+  qrCode: null,
+  isConnected: false,
+  isInitialized: false,
+  user: null,
 }
 
-const clients = new Map()
-
-export function getWAClient(userId) {
-  return clients.get(userId) || null
+export function getWAStatus() {
+  return {
+    connected: client.isConnected,
+    hasQR: !!client.qrCode,
+    user: client.user,
+  }
 }
 
-export async function startWAClient(userId, io) {
-  if (clients.has(userId)) {
-    const existing = clients.get(userId)
-    if (existing.sock?.user) return existing
+export async function initWA(io) {
+  if (client.isInitialized) return client
+  client.isInitialized = true
+
+  if (!fs.existsSync(SESSION_DIR)) {
+    fs.mkdirSync(SESSION_DIR, { recursive: true })
   }
 
-  const sessionDir = path.join(SESSIONS_DIR, userId)
-  if (!fs.existsSync(sessionDir)) {
-    fs.mkdirSync(sessionDir, { recursive: true })
-  }
-
-  const { state, saveCreds } = await useMultiFileAuthState(sessionDir)
-
+  const { state, saveCreds } = await useMultiFileAuthState(SESSION_DIR)
   const sock = makeWASocket({
     version: (await fetchLatestBaileysVersion()).version,
     auth: state,
@@ -38,52 +40,35 @@ export async function startWAClient(userId, io) {
     browser: ['WhatsApp Web Clone', 'Chrome', '1.0.0'],
   })
 
-  const client = { sock, userId, qrCode: null, isConnected: false, contacts: [], chats: [] }
-  clients.set(userId, client)
+  client.sock = sock
 
   sock.ev.on('creds.update', saveCreds)
 
   sock.ev.on('connection.update', async (update) => {
     const { connection, lastDisconnect, qr } = update
-
     if (qr) {
-      client.qrCode = qr
-      try {
-        const qrDataUrl = await toDataURL(qr, { width: 300, margin: 2 })
-        io.to(`user:${userId}`).emit('wa:qr', qrDataUrl)
-      } catch {}
+      client.qrCode = await toDataURL(qr, { width: 300, margin: 2 })
+      client.isConnected = false
+      io.emit('wa:qr', client.qrCode)
     }
-
     if (connection === 'open') {
       client.isConnected = true
       client.qrCode = null
-
-      const contacts = await sock.onWhatsApp('0')
-      const chats = sock.chats?.all() || []
-
-      client.contacts = chats
-        .filter(c => c.id.endsWith('@s.whatsapp.net') && !c.id.includes('status'))
-        .map(c => ({
-          jid: c.id,
-          name: c.name || c.id.split('@')[0],
-          pushName: c.name || '',
-        }))
-
-      io.to(`user:${userId}`).emit('wa:ready', {
-        user: sock.user,
-        contacts: client.contacts,
-      })
+      client.user = sock.user
+      io.emit('wa:ready', { user: sock.user })
     }
-
     if (connection === 'close') {
       client.isConnected = false
       const statusCode = lastDisconnect?.error?.output?.statusCode
-      const shouldReconnect = statusCode !== DisconnectReason.loggedOut
-      if (shouldReconnect) {
-        setTimeout(() => startWAClient(userId, io), 5000)
+      if (statusCode !== DisconnectReason.loggedOut) {
+        setTimeout(() => {
+          client.isInitialized = false
+          initWA(io)
+        }, 5000)
       } else {
-        clients.delete(userId)
-        io.to(`user:${userId}`).emit('wa:loggedOut')
+        client.user = null
+        client.qrCode = null
+        io.emit('wa:loggedOut')
       }
     }
   })
@@ -91,93 +76,50 @@ export async function startWAClient(userId, io) {
   sock.ev.on('messages.upsert', async ({ messages }) => {
     for (const msg of messages) {
       const jid = msg.key.remoteJid
-      if (!jid || jid.includes('@g.us')) continue
-
-      const text = msg.message?.conversation ||
+      if (!jid || jid.includes('@g.us') || jid.includes('@broadcast')) continue
+      const text =
+        msg.message?.conversation ||
         msg.message?.extendedTextMessage?.text ||
         msg.message?.imageMessage?.caption ||
         ''
-
-      const convId = `wa_${jid.replace(/[^a-zA-Z0-9]/g, '_')}`
-
-      io.to(`user:${userId}`).emit('wa:message', {
-        conversationId: convId,
+      io.emit('wa:message', {
+        from: jid,
         message: {
           id: msg.key.id,
-          senderId: msg.key.fromMe ? userId : jid,
+          fromMe: msg.key.fromMe,
           text,
           type: msg.message?.imageMessage ? 'image' : 'text',
-          fileUrl: msg.message?.imageMessage ? await getImageUrl(sock, msg) : undefined,
           timestamp: new Date((msg.messageTimestamp || 0) * 1000).toISOString(),
-          status: msg.key.fromMe ? 'sent' : 'delivered',
-          fromMe: msg.key.fromMe,
-          edited: false,
-          deleted: false,
         },
       })
     }
   })
 
-  sock.ev.on('chats.upsert', async (chats) => {
-    client.contacts = chats
-      .filter(c => c.id.endsWith('@s.whatsapp.net'))
-      .map(c => ({
-        jid: c.id,
-        name: c.name || c.id.split('@')[0],
-        pushName: c.name || '',
-      }))
+  sock.ev.on('contacts.upsert', () => {
+    const chats = sock.chats?.all() || []
+    const contacts = chats
+      .filter((c) => c.id.endsWith('@s.whatsapp.net'))
+      .map((c) => ({ jid: c.id, name: c.name || c.id.split('@')[0] }))
+    io.emit('wa:contacts', contacts)
   })
 
   return client
 }
 
-async function getImageUrl(sock, msg) {
-  try {
-    const buffer = await sock.downloadMediaMessage(msg)
-    return `data:image/jpeg;base64,${buffer.toString('base64')}`
-  } catch {
-    return undefined
-  }
-}
-
-export async function sendWAMessage(userId, jid, text) {
-  const client = clients.get(userId)
-  if (!client?.sock) throw new Error('WhatsApp not connected')
+export async function sendWAMessage(jid, text) {
+  if (!client.sock) throw new Error('WhatsApp not connected')
   await client.sock.sendMessage(jid, { text })
 }
 
-export async function getWAChats(userId) {
-  const client = clients.get(userId)
-  if (!client?.sock) return []
-  const chats = await client.sock.chats?.all() || []
-  return chats
-    .filter(c => c.id.endsWith('@s.whatsapp.net'))
-    .map(c => ({
-      jid: c.id,
-      name: c.name || c.id.split('@')[0],
-      lastMessage: c.lastMessage?.conversation || '',
-    }))
-}
-
-export async function logoutWA(userId) {
-  const client = clients.get(userId)
-  if (client?.sock) {
-    try {
-      await client.sock.logout()
-    } catch {}
-    clients.delete(userId)
-  }
-  const sessionDir = path.join(SESSIONS_DIR, userId)
-  if (fs.existsSync(sessionDir)) {
-    fs.rmSync(sessionDir, { recursive: true, force: true })
-  }
-}
-
-export function getWAStatus(userId) {
-  const client = clients.get(userId)
-  return {
-    connected: client?.isConnected || false,
-    hasQR: !!client?.qrCode,
-    user: client?.sock?.user || null,
-  }
+export async function logoutWA() {
+  try {
+    await client.sock?.logout()
+  } catch {}
+  client.sock = null
+  client.qrCode = null
+  client.isConnected = false
+  client.isInitialized = false
+  client.user = null
+  const dir = SESSION_DIR
+  if (fs.existsSync(dir)) fs.rmSync(dir, { recursive: true, force: true })
 }
