@@ -70,8 +70,7 @@ export async function initWA(io) {
     logger: pino({ level: 'silent' }),
     browser: ['Ubuntu', 'Chrome', '22.04.4'],
     syncFullHistory: false,
-    connectTimeoutMs: 15000,
-    defaultQueryTimeoutMs: 0,
+    connectTimeoutMs: 20000,
   })
 
   client.sock = sock

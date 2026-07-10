@@ -936,3 +936,47 @@ body {
     padding: 20px 5%;
   }
 }
+
+@media (min-width: 1024px) {
+  .wa-auth-card {
+    max-width: 780px;
+    padding: 40px 48px;
+  }
+
+  .wa-auth-card-row {
+    max-width: 900px;
+    padding: 48px;
+  }
+
+  .wa-auth-card-row .wa-auth-left {
+    min-height: 320px;
+  }
+
+  .wa-qr-wrap {
+    width: 240px;
+    height: 240px;
+  }
+
+  .wa-auth-title {
+    font-size: 28px;
+  }
+
+  .wa-auth-desc {
+    font-size: 16px;
+  }
+
+  .wa-code-box {
+    width: 44px;
+    height: 52px;
+    font-size: 22px;
+  }
+
+  .wa-code-grid {
+    gap: 6px;
+    padding: 20px;
+  }
+
+  .wa-step-item {
+    font-size: 15px;
+  }
+}

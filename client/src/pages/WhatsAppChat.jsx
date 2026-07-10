@@ -270,80 +270,55 @@ export default function WhatsAppChat() {
       <div style={{ minHeight: '100vh', width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', background: 'var(--auth-bg)' }}>
         <Header showLang lang={lang} onLang={switchLang} onTheme={toggleTheme} theme={theme} />
         <main style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-          <div style={{
-            width: '100%', maxWidth: 640, background: 'var(--card-bg)', borderRadius: 24,
-            border: '1px solid var(--card-border)', boxShadow: '0 2px 5px rgba(11,20,26,0.05)',
-            padding: '32px 28px', display: 'flex', gap: 28,
-            flexDirection: window.innerWidth < 768 ? 'column' : 'row',
-            alignItems: window.innerWidth < 768 ? 'center' : 'flex-start',
-          }}>
+          <div className="wa-auth-card wa-auth-card-row">
             {/* LEFT COLUMN */}
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', width: '100%' }}>
-              <h2 style={{ fontSize: 20, fontWeight: 400, color: 'var(--text-primary)', marginBottom: 20, letterSpacing: '-0.2px' }}>
-                {t('qr.scan.title')}
-              </h2>
-              <ol style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                <li style={{ display: 'flex', alignItems: 'flex-start', fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: 16 }}>
-                  <StepBadge num={1} />
-                  <span>{t('qr.step1.text')}</span>
-                </li>
-                <li style={{ display: 'flex', alignItems: 'flex-start', fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: 16 }}>
-                  <StepBadge num={2} />
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
-                    {t('qr.step2.text')} <strong style={{ color: 'var(--text-primary)', fontWeight: 600 }}>WhatsApp</strong> {WA_BADGE}
-                  </span>
-                </li>
-                <li style={{ display: 'flex', alignItems: 'flex-start', fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: 16 }}>
-                  <StepBadge num={3} />
-                  <span>{t('qr.step3.text')}</span>
-                </li>
-              </ol>
-              <a href="https://faq.whatsapp.com/1317564962315842/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--green-dark)', fontSize: 12.5, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', marginBottom: 20 }}>
-                {t('qr.help')} <span style={{ fontSize: 10, marginLeft: 3 }}>↗</span>
-              </a>
-              <div style={{
-                display: 'flex', alignItems: 'center', gap: 8, paddingTop: 12,
-                borderTop: '1px solid var(--card-border)', marginTop: 'auto',
-              }}>
-                <span style={{
-                  width: 16, height: 16, background: 'var(--green-accent)', borderRadius: 4,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-                }}>
+            <div className="wa-auth-left">
+              <div>
+                <h2 className="wa-auth-title" style={{ textAlign: 'left', marginBottom: 20 }}>
+                  {t('qr.scan.title')}
+                </h2>
+                <ol style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                  <li className="wa-step-item">
+                    <StepBadge num={1} />
+                    <span>{t('qr.step1.text')}</span>
+                  </li>
+                  <li className="wa-step-item">
+                    <StepBadge num={2} />
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
+                      {t('qr.step2.text')} <strong style={{ color: 'var(--text-primary)', fontWeight: 600 }}>WhatsApp</strong> {WA_BADGE}
+                    </span>
+                  </li>
+                  <li className="wa-step-item">
+                    <StepBadge num={3} />
+                    <span>{t('qr.step3.text')}</span>
+                  </li>
+                </ol>
+                <a href="https://faq.whatsapp.com/1317564962315842/" target="_blank" rel="noopener noreferrer" className="wa-link-btn" style={{ fontSize: 12.5, marginBottom: 20 }}>
+                  {t('qr.help')} <span style={{ fontSize: 10, marginLeft: 3 }}>↗</span>
+                </a>
+              </div>
+              <div className="wa-keep-login">
+                <span className="wa-check-icon">
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M5 13l4 4L19 7"/>
                   </svg>
                 </span>
                 <span style={{ color: 'var(--text-muted)', fontSize: 12.5 }}>{t('qr.keep')}</span>
-                <span style={{
-                  color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 10,
-                  border: '1px solid var(--text-tertiary)', borderRadius: '50%', width: 14, height: 14,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'serif',
-                }}>i</span>
+                <span className="wa-info-icon">i</span>
               </div>
             </div>
             {/* RIGHT COLUMN */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, flexShrink: 0 }}>
-              <div style={{
-                position: 'relative', padding: 12, background: 'var(--card-bg)',
-                border: '1px solid var(--card-border)', borderRadius: 12, boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
-                width: 170, height: 170, display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>
+            <div className="wa-auth-right">
+              <div className="wa-qr-wrap">
                 <img src={qrCode} alt="QR" style={{ width: '100%', height: '100%', objectFit: 'contain', opacity: 0.9 }} />
-                <div style={{
-                  position: 'absolute', width: 36, height: 36, background: 'var(--card-bg)',
-                  borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  boxShadow: '0 2px 6px rgba(0,0,0,0.15)', border: '1px solid var(--card-border)',
-                }}>
+                <div className="wa-qr-center-icon">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--text-primary)">
                     <path d="M12.004 2c-5.517 0-9.996 4.479-9.996 9.995 0 1.764.459 3.419 1.258 4.861l-1.262 4.609 4.716-1.237c1.401.763 3.001 1.199 4.704 1.199 5.518 0 9.996-4.479 9.996-9.995S17.522 2 12.004 2zM6.836 16.929l-.273-.434c-.742-1.181-1.134-2.545-1.134-3.957 0-4.108 3.342-7.45 7.451-7.45 4.109 0 7.451 3.342 7.451 7.45s-3.342 7.451-7.451 7.451c-1.353 0-2.68-.363-3.839-1.05l-.454-.27-2.846.746.746-2.723z"/>
                   </svg>
                 </div>
               </div>
 
-              <button onClick={() => setLoginMode('phone')} style={{
-                background: 'none', border: 'none', color: 'var(--green-dark)', cursor: 'pointer',
-                fontSize: 12.5, fontWeight: 500, display: 'inline-flex', alignItems: 'center', padding: 0,
-              }}>
+              <button onClick={() => setLoginMode('phone')} className="wa-link-btn" style={{ fontSize: 12.5 }}>
                 {t('qr.link.phone')} {CHEVRON()}
               </button>
             </div>
@@ -360,58 +335,33 @@ export default function WhatsAppChat() {
       <div style={{ minHeight: '100vh', width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', background: 'var(--auth-bg)' }}>
         <Header showLang lang={lang} onLang={switchLang} onTheme={toggleTheme} theme={theme} />
         <main style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-          <div style={{
-            width: '100%', maxWidth: 440, background: 'var(--card-bg)', borderRadius: 24,
-            border: '1px solid var(--card-border)', boxShadow: '0 2px 5px rgba(11,20,26,0.05)',
-            padding: 32, display: 'flex', flexDirection: 'column', alignItems: 'center',
-          }}>
-            <h2 style={{ fontSize: 22, fontWeight: 400, color: 'var(--text-primary)', textAlign: 'center', marginBottom: 8, letterSpacing: '-0.3px' }}>
+          <div className="wa-auth-card">
+            <h2 className="wa-auth-title">
               {t('phone.title.short')}
             </h2>
-            <p style={{ color: 'var(--text-secondary)', fontSize: 14, textAlign: 'center', marginBottom: 32, lineHeight: 1.5 }}>
+            <p className="wa-auth-desc">
               {t('phone.desc.short')}
             </p>
 
             {/* Country Selector */}
-            <div onClick={() => setShowCountryPicker(!showCountryPicker)} style={{
-              width: '100%', height: 50, background: 'transparent',
-              border: '1px solid var(--card-border)', borderRadius: 9999,
-              padding: '0 20px', display: 'flex', alignItems: 'center', gap: 12,
-              cursor: 'pointer', fontSize: 14, color: 'var(--text-primary)', marginBottom: 16,
-              transition: 'border-color 0.2s',
-            }}>
+            <div onClick={() => setShowCountryPicker(!showCountryPicker)} className="wa-country-trigger" style={{ marginBottom: 16 }}>
               <span style={{ fontSize: 16 }}>{getFlagEmoji(selectedCountry.code)}</span>
-              <span style={{ fontWeight: 400, color: 'var(--text-primary)' }}>{selectedCountry.name}</span>
+              <span>{selectedCountry.name}</span>
               <div style={{ marginLeft: 'auto', display: 'flex' }}>{CHEVRON_DOWN}</div>
             </div>
 
             {showCountryPicker && (
-              <div style={{ width: '100%', position: 'relative', zIndex: 100, marginBottom: 16 }}>
-                <div style={{ padding: '8px 0' }}>
+              <div className="wa-country-dropdown" style={{ width: '100%', marginBottom: 16 }}>
+                <div className="wa-country-search">
                   <input type="text" value={countrySearch} onChange={e => setCountrySearch(e.target.value)}
                     placeholder={t('country.search')}
-                    style={{
-                      width: '100%', padding: '8px 16px', border: '1px solid var(--card-border)',
-                      borderRadius: 9999, background: 'var(--card-bg)', color: 'var(--text-primary)',
-                      fontSize: 13, outline: 'none',
-                    }}
                     autoFocus
                   />
                 </div>
-                <div style={{
-                  maxHeight: 200, overflowY: 'auto', background: 'var(--card-bg)',
-                  border: '1px solid var(--card-border)', borderRadius: 12,
-                  marginTop: 4, position: 'absolute', left: 0, right: 0,
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                }}>
+                <div className="wa-country-list">
                   {filteredCountries.map(c => (
                     <div key={c.code} onClick={() => { setSelectedCountry(c); setShowCountryPicker(false); setCountrySearch('') }}
-                      style={{
-                        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                        padding: '10px 16px', cursor: 'pointer', fontSize: 14,
-                        background: selectedCountry.code === c.code ? 'var(--wa-active)' : 'transparent',
-                        color: 'var(--text-primary)', transition: 'background 0.1s',
-                      }}
+                      className={`wa-country-item ${selectedCountry.code === c.code ? 'active' : ''}`}
                     >
                       <span>{c.name}</span>
                       <span style={{ color: 'var(--text-secondary)', fontSize: 13 }}>{c.dial}</span>
@@ -422,15 +372,8 @@ export default function WhatsAppChat() {
             )}
 
             {/* Phone Input */}
-            <div style={{
-              width: '100%', height: 50, background: 'transparent',
-              border: '1px solid var(--card-border)', borderRadius: 9999,
-              padding: '0 20px', display: 'flex', alignItems: 'center',
-              marginBottom: pairError ? 12 : 32, transition: 'border-color 0.2s',
-            }}
-              className="phone-input-focus"
-            >
-              <span style={{ color: 'var(--text-primary)', fontSize: 14, fontWeight: 400, paddingRight: 12, borderRight: '1px solid var(--card-border)', marginRight: 12 }}>
+            <div className="wa-phone-input-wrap" style={{ marginBottom: pairError ? 12 : 32 }}>
+              <span style={{ color: 'var(--text-primary)', fontSize: 14, fontWeight: 400, paddingRight: 12, borderRight: '1px solid var(--card-border)', marginRight: 12, flexShrink: 0 }}>
                 {selectedCountry.dial}
               </span>
               <input
@@ -448,33 +391,17 @@ export default function WhatsAppChat() {
             </div>
 
             {pairError && <>
-              <div style={{
-                background: 'rgba(239, 83, 80, 0.12)', color: '#ef5350',
-                padding: '10px 16px', borderRadius: 12, fontSize: 13,
-                marginBottom: 8, width: '100%', textAlign: 'center',
-              }}>{pairError}</div>
-              <button onClick={handlePair} disabled={pairLoading} style={{
-                background: 'none', border: '1px solid var(--green-accent)', color: 'var(--green-accent)',
-                borderRadius: 9999, padding: '6px 20px', fontSize: 13, fontWeight: 500,
-                cursor: pairLoading ? 'not-allowed' : 'pointer', marginBottom: 12, opacity: pairLoading ? 0.6 : 1,
-              }}>
+              <div className="wa-pair-error">{pairError}</div>
+              <button onClick={handlePair} disabled={pairLoading} className="wa-link-btn" style={{ border: '1px solid var(--green-accent)', borderRadius: 9999, padding: '6px 20px', color: 'var(--green-accent)', marginBottom: 12, opacity: pairLoading ? 0.6 : 1 }}>
                 {pairLoading ? t('phone.loading') : 'Coba lagi'}
               </button>
             </>}
 
-            <button onClick={handlePair} disabled={pairLoading || !phoneNumber.trim()} style={{
-              width: '100%', height: 40, background: pairLoading || !phoneNumber.trim() ? 'rgba(0,168,132,0.6)' : 'var(--green-accent)',
-              color: '#fff', border: 'none', borderRadius: 9999,
-              fontSize: 14, fontWeight: 500, cursor: pairLoading || !phoneNumber.trim() ? 'not-allowed' : 'pointer',
-            }}>
+            <button onClick={handlePair} disabled={pairLoading || !phoneNumber.trim()} className="wa-auth-btn">
               {pairLoading ? t('phone.loading') : t('phone.submit.label')}
             </button>
 
-            <button onClick={switchToQR} style={{
-              background: 'none', border: 'none', color: 'var(--green-dark)', cursor: 'pointer',
-              fontSize: 14, fontWeight: 500, display: 'inline-flex', alignItems: 'center',
-              marginTop: 24, padding: 0,
-            }}>
+            <button onClick={switchToQR} className="wa-link-btn" style={{ fontSize: 14, marginTop: 24 }}>
               {t('phone.link.qr')} {CHEVRON()}
             </button>
           </div>
@@ -495,78 +422,54 @@ export default function WhatsAppChat() {
       <div style={{ minHeight: '100vh', width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', background: 'var(--auth-bg)' }}>
         <Header showLang lang={lang} onLang={switchLang} onTheme={toggleTheme} theme={theme} />
         <main style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-          <div style={{
-            width: '100%', maxWidth: 440, background: 'var(--card-bg)', borderRadius: 24,
-            border: '1px solid var(--card-border)', boxShadow: '0 2px 5px rgba(11,20,26,0.05)',
-            padding: '28px 32px', display: 'flex', flexDirection: 'column',
-          }}>
-            <h2 style={{ fontSize: 22, fontWeight: 400, color: 'var(--text-primary)', marginBottom: 8, letterSpacing: '-0.3px' }}>
+          <div className="wa-auth-card" style={{ padding: '28px 32px', alignItems: 'stretch' }}>
+            <h2 className="wa-auth-title" style={{ textAlign: 'left' }}>
               {t('code.title.short')}
             </h2>
-            <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginBottom: 24, lineHeight: 1.5 }}>
-              {t('code.linking')} <strong style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{selectedCountry.dial} {phoneNumber}</strong> (<button onClick={switchToQR} style={{ background: 'none', border: 'none', color: 'var(--green-dark)', cursor: 'pointer', fontSize: 14, padding: 0 }}>{t('code.edit')}</button>)
+            <p className="wa-auth-desc" style={{ textAlign: 'left' }}>
+              {t('code.linking')} <strong style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{selectedCountry.dial} {phoneNumber}</strong> (<button onClick={switchToQR} className="wa-link-btn" style={{ fontSize: 14 }}>{t('code.edit')}</button>)
             </p>
 
             {/* Code boxes */}
-            <div style={{
-              width: '100%', background: 'var(--wa-secondary)', borderRadius: 12,
-              padding: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, marginBottom: 24,
-            }}>
+            <div className="wa-code-grid">
               {left.map((ch, i) => (
-                <span key={`l${i}`} style={{
-                  width: 36, height: 44, background: 'var(--card-bg)', borderRadius: 6,
-                  border: '1px solid var(--card-border)', display: 'flex', alignItems: 'center',
-                  justifyContent: 'center', fontSize: 18, fontWeight: 700, color: 'var(--text-primary)',
-                  boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
-                }}>{ch}</span>
+                <span key={`l${i}`} className="wa-code-box">{ch}</span>
               ))}
               <span style={{ color: 'var(--text-secondary)', fontWeight: 700, fontSize: 16, padding: '0 2px' }}>-</span>
               {right.map((ch, i) => (
-                <span key={`r${i}`} style={{
-                  width: 36, height: 44, background: 'var(--card-bg)', borderRadius: 6,
-                  border: '1px solid var(--card-border)', display: 'flex', alignItems: 'center',
-                  justifyContent: 'center', fontSize: 18, fontWeight: 700, color: 'var(--text-primary)',
-                  boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
-                }}>{ch}</span>
+                <span key={`r${i}`} className="wa-code-box">{ch}</span>
               ))}
             </div>
 
-            <button onClick={() => { navigator.clipboard.writeText(pairingCode); setCopied(true); setTimeout(() => setCopied(false), 2000) }} style={{
-              background: 'none', border: '1px solid var(--green-accent)', color: copied ? 'var(--green-accent)' : 'var(--green-dark)',
-              borderRadius: 9999, padding: '8px 24px', fontSize: 13, fontWeight: 500, cursor: 'pointer',
-              margin: '-16px 0 24px', alignSelf: 'center',
-            }}>
+            <button onClick={() => { navigator.clipboard.writeText(pairingCode); setCopied(true); setTimeout(() => setCopied(false), 2000) }} className="wa-link-btn" style={{ border: '1px solid var(--green-accent)', borderRadius: 9999, padding: '8px 24px', fontSize: 13, color: copied ? 'var(--green-accent)' : 'var(--green-dark)', margin: '-16px 0 24px', alignSelf: 'center' }}>
               {copied ? 'Tersalin!' : 'Salin kode'}
             </button>
 
             {/* Steps */}
             <ol style={{ listStyle: 'none', padding: 0, margin: '0 0 32px' }}>
-              <li style={{ display: 'flex', alignItems: 'flex-start', fontSize: 13.5, color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: 14 }}>
+              <li className="wa-step-item">
                 <StepBadge num={1} />
                 <span>{t('code.step1')} <strong style={{ color: 'var(--text-primary)', fontWeight: 600 }}>WhatsApp</strong>{' '}
                   <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: 'var(--green-icon)', verticalAlign: 'middle', margin: '0 2px' }}></span>
                   {' '}{t('code.step1.end')}
                 </span>
               </li>
-              <li style={{ display: 'flex', alignItems: 'flex-start', fontSize: 13.5, color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: 14 }}>
+              <li className="wa-step-item">
                 <StepBadge num={2} />
                 <span>{t('code.step2')} <strong style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{t('menu')}</strong> <strong style={{ color: 'var(--text-primary)', fontWeight: 700, letterSpacing: '-0.5px' }}>⋮</strong> {t('code.step2.sep')} <strong style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{t('settings')}</strong> ⚙️</span>
               </li>
-              <li style={{ display: 'flex', alignItems: 'flex-start', fontSize: 13.5, color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: 14 }}>
+              <li className="wa-step-item">
                 <StepBadge num={3} />
                 <span>{t('code.step3')} <strong style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{t('code.step3.link')}</strong>, {t('code.step3.sep')} <strong style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{t('code.step3.link2')}</strong></span>
               </li>
-              <li style={{ display: 'flex', alignItems: 'flex-start', fontSize: 13.5, color: 'var(--text-muted)', lineHeight: 1.5 }}>
+              <li className="wa-step-item">
                 <StepBadge num={4} />
                 <span>{t('code.step4')} <strong style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{t('code.step4.link')}</strong>, {t('code.step4.sep')}</span>
               </li>
             </ol>
 
             <div style={{ textAlign: 'center', borderTop: '1px solid var(--card-border)', paddingTop: 20 }}>
-              <button onClick={switchToQR} style={{
-                background: 'none', border: 'none', color: 'var(--green-dark)', cursor: 'pointer',
-                fontSize: 14, fontWeight: 500, display: 'inline-flex', alignItems: 'center', padding: 0,
-              }}>
+              <button onClick={switchToQR} className="wa-link-btn" style={{ fontSize: 14 }}>
                 {t('code.link.qr')} {CHEVRON()}
               </button>
             </div>
