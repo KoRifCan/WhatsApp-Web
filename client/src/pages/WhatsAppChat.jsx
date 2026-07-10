@@ -224,8 +224,8 @@ export default function WhatsAppChat() {
 
   const switchToQR = () => {
     setLoginMode('qr'); setPairingCode(null); setPairError('')
-    setPhoneNumber(''); setQrCode(null)
-    socketRef.current.emit('wa:start')
+    setPhoneNumber('')
+    socketRef.current?.emit('wa:start')
   }
 
   const handleChatSelect = (jid) => { setActiveJid(jid); if (window.innerWidth < 768) setMobileView('chat') }

@@ -67,8 +67,14 @@ io.on('connection', (socket) => {
   })
 
   socket.on('wa:start', async () => {
-    if (!waClient || !waClient.isConnected) {
+    if (!waClient || !waClient.isInitialized) {
       await startWA()
+    } else if (!waClient.isConnected) {
+      waClient.isInitialized = false
+      await startWA()
+    }
+    if (waClient?.qrCode) {
+      socket.emit('wa:qr', waClient.qrCode)
     }
   })
 })
