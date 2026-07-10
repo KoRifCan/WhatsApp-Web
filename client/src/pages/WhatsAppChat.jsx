@@ -26,6 +26,12 @@ function formatPairCode(code) {
   return c.slice(0, mid) + '-' + c.slice(mid)
 }
 
+function getFlagEmoji(code) {
+  if (!code) return '🇮🇩'
+  const cps = code.toUpperCase().split('').map(c => 0x1F1E6 + c.charCodeAt(0) - 65)
+  return String.fromCodePoint(...cps)
+}
+
 function getInitialTheme() {
   try { return localStorage.getItem('wa_theme') || 'light' } catch { return 'light' }
 }
@@ -265,9 +271,9 @@ export default function WhatsAppChat() {
   // ===== SCREEN 3: QR Code Login =====
   if (!connected && qrCode && loginMode === 'qr') {
     return (
-      <div style={{ minHeight: '100vh', width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', background: bg }}>
+      <div style={{ height: '100vh', width: '100%', display: 'flex', flexDirection: 'column', background: bg }}>
         <Header showLang lang={lang} onLang={switchLang} onTheme={toggleTheme} theme={theme} />
-        <main style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+        <main style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, overflowY: 'auto' }}>
           <div style={{
             width: '100%', maxWidth: 640, background: cardBg, borderRadius: 24,
             border: `1px solid ${cardBorder}`, boxShadow: '0 2px 5px rgba(11,20,26,0.05)',
@@ -354,9 +360,9 @@ export default function WhatsAppChat() {
   // ===== SCREEN 1: Phone Number Input =====
   if (!connected && loginMode === 'phone' && !pairingCode) {
     return (
-      <div style={{ minHeight: '100vh', width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', background: bg }}>
+      <div style={{ height: '100vh', width: '100%', display: 'flex', flexDirection: 'column', background: bg }}>
         <Header showLang lang={lang} onLang={switchLang} onTheme={toggleTheme} theme={theme} />
-        <main style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+        <main style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, overflowY: 'auto' }}>
           <div style={{
             width: '100%', maxWidth: 440, background: cardBg, borderRadius: 24,
             border: `1px solid ${cardBorder}`, boxShadow: '0 2px 5px rgba(11,20,26,0.05)',
@@ -377,7 +383,7 @@ export default function WhatsAppChat() {
               cursor: 'pointer', fontSize: 14, color: textPrimary, marginBottom: 16,
               transition: 'border-color 0.2s',
             }}>
-              <span style={{ fontSize: 16 }}>🇮🇩</span>
+              <span style={{ fontSize: 16 }}>{getFlagEmoji(selectedCountry.code)}</span>
               <span style={{ fontWeight: 400, color: textPrimary }}>{selectedCountry.name}</span>
               <div style={{ marginLeft: 'auto', display: 'flex' }}>{CHEVRON_DOWN}</div>
             </div>
@@ -480,9 +486,9 @@ export default function WhatsAppChat() {
     const right = parts[1]?.split('') || []
 
     return (
-      <div style={{ minHeight: '100vh', width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', background: bg }}>
+      <div style={{ height: '100vh', width: '100%', display: 'flex', flexDirection: 'column', background: bg }}>
         <Header showLang lang={lang} onLang={switchLang} onTheme={toggleTheme} theme={theme} />
-        <main style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+        <main style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, overflowY: 'auto' }}>
           <div style={{
             width: '100%', maxWidth: 440, background: cardBg, borderRadius: 24,
             border: `1px solid ${cardBorder}`, boxShadow: '0 2px 5px rgba(11,20,26,0.05)',
@@ -560,7 +566,7 @@ export default function WhatsAppChat() {
   // ===== LOADING =====
   if (!connected) {
     return (
-      <div style={{ minHeight: '100vh', width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', background: bg }}>
+      <div style={{ height: '100vh', width: '100%', display: 'flex', flexDirection: 'column', background: bg }}>
         <Header showLang={false} lang={lang} onLang={switchLang} onTheme={toggleTheme} theme={theme} />
         <main style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 20, color: textSecondary, fontSize: 14 }}>
           <div className="spinner" />
