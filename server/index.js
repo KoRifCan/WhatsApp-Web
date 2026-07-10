@@ -62,18 +62,7 @@ io.on('connection', (socket) => {
       const code = await requestPairingCode(phoneNumber)
       socket.emit('wa:pair:code', { code })
     } catch (e) {
-      const msg = e.message || ''
-      let friendly = msg
-      if (msg.includes('not registered')) {
-        friendly = 'Nomor ini belum terdaftar di WhatsApp. Periksa kembali nomor telepon Anda.'
-      } else if (msg.includes('Connection Closed') || msg.includes('Stream')) {
-        friendly = 'Koneksi terputus, silakan coba lagi.'
-      } else if (msg.includes('not initialized') || msg.includes('belum siap')) {
-        friendly = 'WhatsApp belum siap, silakan coba lagi.'
-      } else if (msg.includes('sudah tertaut')) {
-        friendly = msg
-      }
-      socket.emit('wa:error', { error: friendly })
+      socket.emit('wa:error', { error: e.message })
     }
   })
 

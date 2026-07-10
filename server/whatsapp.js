@@ -26,14 +26,14 @@ export function getWAStatus() {
   }
 }
 
-function waitForSockReady(timeout = 15000) {
+function waitForSockReady(timeout = 8000) {
   if (client.sock && client.qrCode && client.sock.ws?.readyState === 1) return Promise.resolve()
   if (client.isConnected) return Promise.resolve()
   return new Promise((resolve, reject) => {
     resolveSockReady = resolve
     setTimeout(() => {
       resolveSockReady = null
-      reject(new Error('Timeout menunggu koneksi WhatsApp'))
+      reject(new Error('Koneksi WhatsApp terputus, silakan coba lagi'))
     }, timeout)
   })
 }
@@ -148,11 +148,16 @@ export async function requestPairingCode(phoneNumber) {
     client.isInitialized = false
     await initWA(_io)
     await waitForSockReady()
+  } else {
+    if (client.isConnected) {
+      throw new Error('Perangkat sudah tertaut. Silakan logout terlebih dahulu.')
+    }
+    if (client.sock && client.qrCode && client.sock.ws?.readyState === 1) {
+      // socket is ready, proceed
+    } else {
+      await waitForSockReady()
+    }
   }
-  if (client.isConnected) {
-    throw new Error('Perangkat sudah tertaut. Silakan logout terlebih dahulu.')
-  }
-  await waitForSockReady()
   if (!client.sock) {
     throw new Error('Koneksi WhatsApp terputus, silakan coba lagi')
   }
