@@ -134,7 +134,7 @@ function Footer() {
     <div style={{ padding: '32px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, textAlign: 'center', flexShrink: 0 }}>
       <p style={{ color: 'var(--text-secondary)', fontSize: 13 }}>
         {t('footer.noaccount')}{' '}
-        <a href="#" style={{ color: 'var(--green-dark)', fontWeight: 500, textDecoration: 'none' }}>{t('footer.start')} ↗</a>
+        <a href="https://faq.whatsapp.com/497209988909970/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--green-dark)', fontWeight: 500, textDecoration: 'none' }}>{t('footer.start')} ↗</a>
       </p>
       <p style={{ color: 'var(--text-secondary)', fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, opacity: 0.85 }}>
         {LOCK_ICON}
