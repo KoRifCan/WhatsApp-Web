@@ -125,14 +125,14 @@ function Footer() {
   return (
     <div style={{ padding: '32px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, textAlign: 'center', flexShrink: 0 }}>
       <p style={{ color: 'var(--text-secondary)', fontSize: 13 }}>
-        Tidak punya akun WhatsApp?{' '}
-        <a href="#" style={{ color: 'var(--green-dark)', fontWeight: 500, textDecoration: 'none' }}>Mulai ↗</a>
+        {t('footer.noaccount')}{' '}
+        <a href="#" style={{ color: 'var(--green-dark)', fontWeight: 500, textDecoration: 'none' }}>{t('footer.start')} ↗</a>
       </p>
       <p style={{ color: 'var(--text-secondary)', fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, opacity: 0.85 }}>
         {LOCK_ICON}
-        Pesan pribadi Anda terenkripsi secara end-to-end
+        {t('encryption')}
       </p>
-      <a href="#" style={{ color: 'var(--text-secondary)', fontSize: 11, textDecoration: 'none', opacity: 0.7 }}>Ketentuan & Kebijakan Privasi</a>
+      <a href="#" style={{ color: 'var(--text-secondary)', fontSize: 11, textDecoration: 'none', opacity: 0.7 }}>{t('footer.terms')}</a>
     </div>
   )
 }
@@ -253,9 +253,9 @@ export default function WhatsAppChat() {
   // ===== SCREEN 3: QR Code Login =====
   if (!connected && qrCode && loginMode === 'qr') {
     return (
-      <div style={{ height: '100vh', width: '100%', display: 'flex', flexDirection: 'column', background: 'var(--auth-bg)' }}>
+      <div style={{ minHeight: '100vh', width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', background: 'var(--auth-bg)' }}>
         <Header showLang lang={lang} onLang={switchLang} onTheme={toggleTheme} theme={theme} />
-        <main style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, overflowY: 'auto' }}>
+        <main style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
           <div style={{
             width: '100%', maxWidth: 640, background: 'var(--card-bg)', borderRadius: 24,
             border: '1px solid var(--card-border)', boxShadow: '0 2px 5px rgba(11,20,26,0.05)',
@@ -266,26 +266,26 @@ export default function WhatsAppChat() {
             {/* LEFT COLUMN */}
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', width: '100%' }}>
               <h2 style={{ fontSize: 20, fontWeight: 400, color: 'var(--text-primary)', marginBottom: 20, letterSpacing: '-0.2px' }}>
-                Pindai untuk login
+                {t('qr.scan.title')}
               </h2>
               <ol style={{ listStyle: 'none', padding: 0, margin: 0 }}>
                 <li style={{ display: 'flex', alignItems: 'flex-start', fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: 16 }}>
                   <StepBadge num={1} />
-                  <span>Pindai kode QR dengan kamera telepon Anda</span>
+                  <span>{t('qr.step1.text')}</span>
                 </li>
                 <li style={{ display: 'flex', alignItems: 'flex-start', fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: 16 }}>
                   <StepBadge num={2} />
                   <span style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
-                    Ketuk tautan untuk membuka <strong style={{ color: 'var(--text-primary)', fontWeight: 600 }}>WhatsApp</strong> {WA_BADGE}
+                    {t('qr.step2.text')} <strong style={{ color: 'var(--text-primary)', fontWeight: 600 }}>WhatsApp</strong> {WA_BADGE}
                   </span>
                 </li>
                 <li style={{ display: 'flex', alignItems: 'flex-start', fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: 16 }}>
                   <StepBadge num={3} />
-                  <span>Pindai kode QR lagi untuk menautkan ke akun Anda</span>
+                  <span>{t('qr.step3.text')}</span>
                 </li>
               </ol>
-              <a href="#" style={{ color: 'var(--green-dark)', fontSize: 12.5, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', marginBottom: 20 }}>
-                Perlu bantuan? <span style={{ fontSize: 10, marginLeft: 3 }}>↗</span>
+              <a href="https://faq.whatsapp.com/1317564962315842/?cms_platform=android&lang=id" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--green-dark)', fontSize: 12.5, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', marginBottom: 20 }}>
+                {t('qr.help')} <span style={{ fontSize: 10, marginLeft: 3 }}>↗</span>
               </a>
               <div style={{
                 display: 'flex', alignItems: 'center', gap: 8, paddingTop: 12,
@@ -299,7 +299,7 @@ export default function WhatsAppChat() {
                     <path d="M5 13l4 4L19 7"/>
                   </svg>
                 </span>
-                <span style={{ color: 'var(--text-muted)', fontSize: 12.5 }}>Tetap masuk di browser ini</span>
+                <span style={{ color: 'var(--text-muted)', fontSize: 12.5 }}>{t('qr.keep')}</span>
                 <span style={{
                   color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 10,
                   border: '1px solid var(--text-tertiary)', borderRadius: '50%', width: 14, height: 14,
@@ -310,17 +310,17 @@ export default function WhatsAppChat() {
             {/* RIGHT COLUMN */}
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, flexShrink: 0 }}>
               <div style={{
-                position: 'relative', padding: 12, background: '#fff',
-                border: '1px solid #e9edef', borderRadius: 12, boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+                position: 'relative', padding: 12, background: 'var(--card-bg)',
+                border: '1px solid var(--card-border)', borderRadius: 12, boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
                 width: 170, height: 170, display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
                 <img src={qrCode} alt="QR" style={{ width: '100%', height: '100%', objectFit: 'contain', opacity: 0.9 }} />
                 <div style={{
-                  position: 'absolute', width: 36, height: 36, background: '#fff',
+                  position: 'absolute', width: 36, height: 36, background: 'var(--card-bg)',
                   borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  boxShadow: '0 2px 6px rgba(0,0,0,0.15)', border: '1px solid #e9edef',
+                  boxShadow: '0 2px 6px rgba(0,0,0,0.15)', border: '1px solid var(--card-border)',
                 }}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="#111B21">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--text-primary)">
                     <path d="M12.004 2c-5.517 0-9.996 4.479-9.996 9.995 0 1.764.459 3.419 1.258 4.861l-1.262 4.609 4.716-1.237c1.401.763 3.001 1.199 4.704 1.199 5.518 0 9.996-4.479 9.996-9.995S17.522 2 12.004 2zM6.836 16.929l-.273-.434c-.742-1.181-1.134-2.545-1.134-3.957 0-4.108 3.342-7.45 7.451-7.45 4.109 0 7.451 3.342 7.451 7.45s-3.342 7.451-7.451 7.451c-1.353 0-2.68-.363-3.839-1.05l-.454-.27-2.846.746.746-2.723z"/>
                   </svg>
                 </div>
@@ -329,7 +329,7 @@ export default function WhatsAppChat() {
                 background: 'none', border: 'none', color: 'var(--green-dark)', cursor: 'pointer',
                 fontSize: 12.5, fontWeight: 500, display: 'inline-flex', alignItems: 'center', padding: 0,
               }}>
-                Login dengan nomor telepon {CHEVRON()}
+                {t('qr.link.phone')} {CHEVRON()}
               </button>
             </div>
           </div>
@@ -342,19 +342,19 @@ export default function WhatsAppChat() {
   // ===== SCREEN 1: Phone Number Input =====
   if (!connected && loginMode === 'phone' && !pairingCode) {
     return (
-      <div style={{ height: '100vh', width: '100%', display: 'flex', flexDirection: 'column', background: 'var(--auth-bg)' }}>
+      <div style={{ minHeight: '100vh', width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', background: 'var(--auth-bg)' }}>
         <Header showLang lang={lang} onLang={switchLang} onTheme={toggleTheme} theme={theme} />
-        <main style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, overflowY: 'auto' }}>
+        <main style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
           <div style={{
             width: '100%', maxWidth: 440, background: 'var(--card-bg)', borderRadius: 24,
             border: '1px solid var(--card-border)', boxShadow: '0 2px 5px rgba(11,20,26,0.05)',
             padding: 32, display: 'flex', flexDirection: 'column', alignItems: 'center',
           }}>
             <h2 style={{ fontSize: 22, fontWeight: 400, color: 'var(--text-primary)', textAlign: 'center', marginBottom: 8, letterSpacing: '-0.3px' }}>
-              Masukkan nomor telepon
+              {t('phone.title.short')}
             </h2>
             <p style={{ color: 'var(--text-secondary)', fontSize: 14, textAlign: 'center', marginBottom: 32, lineHeight: 1.5 }}>
-              Pilih negara lalu masukkan nomor telepon Anda.
+              {t('phone.desc.short')}
             </p>
 
             {/* Country Selector */}
@@ -374,7 +374,7 @@ export default function WhatsAppChat() {
               <div style={{ width: '100%', position: 'relative', zIndex: 100, marginBottom: 16 }}>
                 <div style={{ padding: '8px 0' }}>
                   <input type="text" value={countrySearch} onChange={e => setCountrySearch(e.target.value)}
-                    placeholder="Cari negara..."
+                    placeholder={t('country.search')}
                     style={{
                       width: '100%', padding: '8px 16px', border: '1px solid var(--card-border)',
                       borderRadius: 9999, background: 'var(--card-bg)', color: 'var(--text-primary)',
@@ -422,7 +422,7 @@ export default function WhatsAppChat() {
                 type="tel"
                 value={phoneNumber}
                 onChange={e => setPhoneNumber(e.target.value.replace(/[^0-9]/g, ''))}
-                placeholder="Nomor telepon"
+                placeholder={t('phone.label')}
                 autoFocus
                 disabled={pairLoading}
                 style={{
@@ -443,7 +443,7 @@ export default function WhatsAppChat() {
               color: '#fff', border: 'none', borderRadius: 9999,
               fontSize: 14, fontWeight: 500, cursor: pairLoading || !phoneNumber.trim() ? 'not-allowed' : 'pointer',
             }}>
-              {pairLoading ? 'Memproses...' : 'Berikutnya'}
+              {pairLoading ? t('phone.loading') : t('phone.submit.label')}
             </button>
 
             <button onClick={switchToQR} style={{
@@ -451,7 +451,7 @@ export default function WhatsAppChat() {
               fontSize: 14, fontWeight: 500, display: 'inline-flex', alignItems: 'center',
               marginTop: 24, padding: 0,
             }}>
-              Login dengan kode QR {CHEVRON()}
+              {t('phone.link.qr')} {CHEVRON()}
             </button>
           </div>
         </main>
@@ -468,19 +468,19 @@ export default function WhatsAppChat() {
     const right = parts[1]?.split('') || []
 
     return (
-      <div style={{ height: '100vh', width: '100%', display: 'flex', flexDirection: 'column', background: 'var(--auth-bg)' }}>
+      <div style={{ minHeight: '100vh', width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', background: 'var(--auth-bg)' }}>
         <Header showLang lang={lang} onLang={switchLang} onTheme={toggleTheme} theme={theme} />
-        <main style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, overflowY: 'auto' }}>
+        <main style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
           <div style={{
             width: '100%', maxWidth: 440, background: 'var(--card-bg)', borderRadius: 24,
             border: '1px solid var(--card-border)', boxShadow: '0 2px 5px rgba(11,20,26,0.05)',
             padding: '28px 32px', display: 'flex', flexDirection: 'column',
           }}>
             <h2 style={{ fontSize: 22, fontWeight: 400, color: 'var(--text-primary)', marginBottom: 8, letterSpacing: '-0.3px' }}>
-              Masukkan kode di telepon
+              {t('code.title.short')}
             </h2>
             <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginBottom: 24, lineHeight: 1.5 }}>
-              Menautkan akun WhatsApp <strong style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{selectedCountry.dial} {phoneNumber}</strong> (<button onClick={switchToQR} style={{ background: 'none', border: 'none', color: 'var(--green-dark)', cursor: 'pointer', fontSize: 14, padding: 0 }}>edit</button>)
+              {t('code.linking')} <strong style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{selectedCountry.dial} {phoneNumber}</strong> (<button onClick={switchToQR} style={{ background: 'none', border: 'none', color: 'var(--green-dark)', cursor: 'pointer', fontSize: 14, padding: 0 }}>{t('code.edit')}</button>)
             </p>
 
             {/* Code boxes */}
@@ -511,22 +511,22 @@ export default function WhatsAppChat() {
             <ol style={{ listStyle: 'none', padding: 0, margin: '0 0 32px' }}>
               <li style={{ display: 'flex', alignItems: 'flex-start', fontSize: 13.5, color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: 14 }}>
                 <StepBadge num={1} />
-                <span>Buka <strong style={{ color: 'var(--text-primary)', fontWeight: 600 }}>WhatsApp</strong>{' '}
+                <span>{t('code.step1')} <strong style={{ color: 'var(--text-primary)', fontWeight: 600 }}>WhatsApp</strong>{' '}
                   <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: 'var(--green-icon)', verticalAlign: 'middle', margin: '0 2px' }}></span>
-                  {' '}di telepon
+                  {' '}{t('code.step1.end')}
                 </span>
               </li>
               <li style={{ display: 'flex', alignItems: 'flex-start', fontSize: 13.5, color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: 14 }}>
                 <StepBadge num={2} />
-                <span>Di Android ketuk <strong style={{ color: 'var(--text-primary)', fontWeight: 600 }}>Menu</strong> <strong style={{ color: 'var(--text-primary)', fontWeight: 700, letterSpacing: '-0.5px' }}>⋮</strong> · Di iPhone ketuk <strong style={{ color: 'var(--text-primary)', fontWeight: 600 }}>Pengaturan</strong> ⚙️</span>
+                <span>{t('code.step2')} <strong style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{t('menu')}</strong> <strong style={{ color: 'var(--text-primary)', fontWeight: 700, letterSpacing: '-0.5px' }}>⋮</strong> {t('code.step2.sep')} <strong style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{t('settings')}</strong> ⚙️</span>
               </li>
               <li style={{ display: 'flex', alignItems: 'flex-start', fontSize: 13.5, color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: 14 }}>
                 <StepBadge num={3} />
-                <span>Ketuk <strong style={{ color: 'var(--text-primary)', fontWeight: 600 }}>Perangkat tertaut</strong>, lalu <strong style={{ color: 'var(--text-primary)', fontWeight: 600 }}>Tautkan perangkat</strong></span>
+                <span>{t('code.step3')} <strong style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{t('code.step3.link')}</strong>, {t('code.step3.sep')} <strong style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{t('code.step3.link2')}</strong></span>
               </li>
               <li style={{ display: 'flex', alignItems: 'flex-start', fontSize: 13.5, color: 'var(--text-muted)', lineHeight: 1.5 }}>
                 <StepBadge num={4} />
-                <span>Ketuk <strong style={{ color: 'var(--text-primary)', fontWeight: 600 }}>Tautkan dengan nomor telepon saja</strong>, lalu masukkan kode ini di telepon Anda</span>
+                <span>{t('code.step4')} <strong style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{t('code.step4.link')}</strong>, {t('code.step4.sep')}</span>
               </li>
             </ol>
 
@@ -535,7 +535,7 @@ export default function WhatsAppChat() {
                 background: 'none', border: 'none', color: 'var(--green-dark)', cursor: 'pointer',
                 fontSize: 14, fontWeight: 500, display: 'inline-flex', alignItems: 'center', padding: 0,
               }}>
-                Login dengan kode QR {CHEVRON()}
+                {t('code.link.qr')} {CHEVRON()}
               </button>
             </div>
           </div>
@@ -548,11 +548,11 @@ export default function WhatsAppChat() {
   // ===== LOADING =====
   if (!connected) {
     return (
-      <div style={{ height: '100vh', width: '100%', display: 'flex', flexDirection: 'column', background: 'var(--auth-bg)' }}>
+      <div style={{ minHeight: '100vh', width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', background: 'var(--auth-bg)' }}>
         <Header showLang={false} lang={lang} onLang={switchLang} onTheme={toggleTheme} theme={theme} />
         <main style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 20, color: 'var(--text-secondary)', fontSize: 14 }}>
           <div className="spinner" />
-          <p>Menghubungkan...</p>
+          <p>{t('loading')}</p>
         </main>
         <Footer />
       </div>
@@ -573,7 +573,7 @@ export default function WhatsAppChat() {
             <button onClick={switchLang} title={lang === 'id' ? 'English' : 'Indonesian'}>
               <span style={{ fontSize: 12, fontWeight: 700 }}>{lang === 'id' ? 'EN' : 'ID'}</span>
             </button>
-            <button onClick={toggleTheme} title={theme === 'dark' ? 'Light theme' : 'Dark theme'}>
+            <button onClick={toggleTheme} title={theme === 'dark' ? t('theme.toggle.light') : t('theme.toggle.dark')}>
               {theme === 'dark' ? (
                 <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
                   <path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0-5c.34 0 .68.02 1.01.07C10.9 2.6 8.7 4.07 7.2 6.14 5.7 8.23 5 10.74 5 13.5c0 5.52 4.48 10 10 10 2.76 0 5.27-.7 7.36-2.2 2.07-1.5 3.54-3.7 4.07-5.81-.05.33-.07.67-.07 1.01 0 4.14-3.36 7.5-7.5 7.5S12 21.14 12 17c0-4.14 3.36-7.5 7.5-7.5.34 0 .68.02 1.01.07C19.4 3.9 16.3 2 12 2z"/>
@@ -584,7 +584,7 @@ export default function WhatsAppChat() {
                 </svg>
               )}
             </button>
-            <button onClick={() => { if (window.confirm('Putuskan sambungan WhatsApp?')) fetch(SOCKET_URL + '/api/wa/logout', { method: 'POST' }) }} title="Putuskan sambungan">
+            <button onClick={() => { if (window.confirm(t('logout.confirm'))) fetch(SOCKET_URL + '/api/wa/logout', { method: 'POST' }) }} title={t('logout.title')}>
               <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15l-4-4 4-4 1.41 1.41L10.83 12H16v2h-5.17l2.58 2.59L11 17z"/>
               </svg>
@@ -595,7 +595,7 @@ export default function WhatsAppChat() {
           <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
             <path d="M15.009 13.805h-.636l-.22-.219a5.184 5.184 0 0 0 1.256-3.386 5.207 5.207 0 1 0-5.207 5.207 5.184 5.184 0 0 0 3.385-1.255l.221.22v.635l4.004 3.999 1.194-1.195-3.997-4.006zm-4.808 0a3.605 3.605 0 1 1 0-7.21 3.605 3.605 0 0 1 0 7.21z"/>
           </svg>
-          <input type="text" placeholder="Cari atau mulai chat baru" value={search} onChange={e => setSearch(e.target.value)} />
+          <input type="text" placeholder={t('search.placeholder')} value={search} onChange={e => setSearch(e.target.value)} />
         </div>
         <div className="wa-chat-list">
           {filteredContacts.map(c => {
@@ -608,13 +608,13 @@ export default function WhatsAppChat() {
                 </div>
                 <div className="wa-chat-info">
                   <div className="wa-chat-name">{c.name || c.jid}</div>
-                  {lastMsg && <div className="wa-chat-preview">{lastMsg.fromMe && 'Anda: '}{lastMsg.text}</div>}
+                  {lastMsg && <div className="wa-chat-preview">{lastMsg.fromMe && t('msg.you') + ': '}{lastMsg.text}</div>}
                 </div>
                 {lastMsg && <div className="wa-chat-time">{formatTime(lastMsg.timestamp)}</div>}
               </div>
             )
           })}
-          {filteredContacts.length === 0 && <div className="wa-empty">Tidak ada chat</div>}
+          {filteredContacts.length === 0 && <div className="wa-empty">{t('no.chat')}</div>}
         </div>
       </div>
 
@@ -632,7 +632,7 @@ export default function WhatsAppChat() {
               </div>
               <div className="wa-main-header-info">
                 <div className="wa-main-header-name">{activeContact?.name || activeJid}</div>
-                <div className="wa-main-header-status">WhatsApp</div>
+                <div className="wa-main-header-status">{t('chat.status')}</div>
               </div>
             </div>
             <div className="wa-messages">
@@ -651,7 +651,7 @@ export default function WhatsAppChat() {
             </div>
             <div className="wa-input-area">
               <form onSubmit={sendMessage}>
-                <input ref={inputRef} type="text" value={inputText} onChange={e => setInputText(e.target.value)} placeholder="Ketik pesan" autoFocus />
+                <input ref={inputRef} type="text" value={inputText} onChange={e => setInputText(e.target.value)} placeholder={t('msg.input')} autoFocus />
                 <button type="submit" className="wa-send" disabled={!inputText.trim()}>
                   <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
                 </button>
@@ -671,9 +671,9 @@ export default function WhatsAppChat() {
                 <path d="M155 110h95M155 125h80" stroke={theme === 'dark' ? '#2a3942' : '#d0d5db'} strokeWidth="6" strokeLinecap="round"/>
               </svg>
             </div>
-            <h2 className="wa-nochat-title">WhatsApp Web</h2>
-            <p className="wa-nochat-subtitle">Kirim dan terima pesan tanpa perlu membuka ponsel.</p>
-            <p className="wa-nochat-hint">Pilih chat dari sidebar untuk mulai berbicara</p>
+            <h2 className="wa-nochat-title">{t('nochat.title')}</h2>
+            <p className="wa-nochat-subtitle">{t('nochat.subtitle')}</p>
+            <p className="wa-nochat-hint">{t('nochat.hint')}</p>
           </div>
         )}
       </div>

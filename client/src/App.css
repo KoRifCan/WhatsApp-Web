@@ -71,7 +71,8 @@ body {
   font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
   background: var(--auth-bg);
   color: var(--text-primary);
-  overflow: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   height: 100vh;
 }
 
