@@ -17,6 +17,14 @@ let client = {
 }
 let _io = null
 let resolveSockReady = null
+let cachedVersion = null
+
+async function getVersion() {
+  if (!cachedVersion) {
+    cachedVersion = (await fetchLatestBaileysVersion()).version
+  }
+  return cachedVersion
+}
 
 export function getWAStatus() {
   return {
@@ -27,7 +35,7 @@ export function getWAStatus() {
 }
 
 function waitForSockReady(timeout = 8000) {
-  if (client.sock && client.qrCode && client.sock.ws?.readyState === 1) return Promise.resolve()
+  if (client.sock && client.qrCode) return Promise.resolve()
   if (client.isConnected) return Promise.resolve()
   return new Promise((resolve, reject) => {
     resolveSockReady = resolve
@@ -56,12 +64,14 @@ export async function initWA(io) {
     state = fresh.state
   }
   const sock = makeWASocket({
-    version: (await fetchLatestBaileysVersion()).version,
+    version: await getVersion(),
     auth: state,
     printQRInTerminal: false,
     logger: pino({ level: 'silent' }),
     browser: ['Ubuntu', 'Chrome', '22.04.4'],
     syncFullHistory: false,
+    connectTimeoutMs: 15000,
+    defaultQueryTimeoutMs: 0,
   })
 
   client.sock = sock
@@ -144,34 +154,40 @@ export async function initWA(io) {
 }
 
 export async function requestPairingCode(phoneNumber) {
+  const t0 = Date.now()
   if (!client.sock || !client.isInitialized) {
     client.isInitialized = false
     await initWA(_io)
+    console.log(`[PAIR] init took ${Date.now() - t0}ms`)
     await waitForSockReady()
+    console.log(`[PAIR] waitSock took ${Date.now() - t0}ms`)
   } else {
     if (client.isConnected) {
       throw new Error('Perangkat sudah tertaut. Silakan logout terlebih dahulu.')
     }
-    if (client.sock && client.qrCode && client.sock.ws?.readyState === 1) {
+    if (client.sock && client.qrCode) {
       // socket is ready, proceed
     } else {
+      console.log(`[PAIR] waiting for socket... (t=${Date.now() - t0}ms)`)
       await waitForSockReady()
+      console.log(`[PAIR] wait took ${Date.now() - t0}ms`)
     }
   }
   if (!client.sock) {
     throw new Error('Koneksi WhatsApp terputus, silakan coba lagi')
   }
-  console.log(`[PAIR] Requesting code for ${phoneNumber}...`)
-  console.log(`[PAIR] sock=${!!client.sock}, ws=${client.sock?.ws?.readyState}, qr=${!!client.qrCode}, conn=${client.isConnected}`)
+  console.log(`[PAIR] Requesting code for ${phoneNumber}... (t=${Date.now() - t0}ms)`)
   try {
+    const t1 = Date.now()
     const code = await client.sock.requestPairingCode(phoneNumber)
+    console.log(`[PAIR] requestPairingCode() took ${Date.now() - t1}ms`)
     if (!code || code.length < 4) {
       throw new Error('Kode tidak valid dari server WhatsApp')
     }
-    console.log(`[PAIR] Code received (${code.length} chars): ${code.substring(0, 4)}...`)
+    console.log(`[PAIR] Code received (${code.length} chars): ${code.substring(0, 4)}... total=${Date.now() - t0}ms`)
     return code
   } catch (e) {
-    console.error(`[PAIR] Error for ${phoneNumber}: ${e.message}`)
+    console.error(`[PAIR] Error for ${phoneNumber} at ${Date.now() - t0}ms: ${e.message}`)
     throw e
   }
 }
