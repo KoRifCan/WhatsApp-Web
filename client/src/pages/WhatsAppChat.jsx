@@ -4,7 +4,6 @@ import config from '../config'
 import { t, getLang, setLang } from '../langs'
 import countries from '../countries'
 
-const SOCKET_URL = config.backendURL || '/'
 const COLORS = ['#00a884', '#5b61b9', '#cb5d5d', '#4a9c6f', '#d4a84b', '#a069c3', '#5badc3', '#d46b9c']
 
 function getColor(name) {
@@ -191,15 +190,21 @@ export default function WhatsAppChat() {
   useEffect(() => { loginModeRef.current = loginMode }, [loginMode])
 
   useEffect(() => {
-    const socket = io(SOCKET_URL, { transports: ['websocket', 'polling'] })
-    socketRef.current = socket
-    socket.on('wa:status', (s) => {
-      if (s.connected) setConnected(true)
-      else if (s.hasQR) socket.emit('wa:start')
-    })
-    socket.on('wa:qr', (d) => { if (loginModeRef.current === 'qr') setQrCode(d) })
-    socket.on('wa:ready', ({ user }) => { setConnected(true); setQrCode(null); setPairingCode(null); setWaUser(user); socket.emit('wa:getChats'); socket.emit('wa:getContacts') })
-    socket.on('wa:chats', (chats) => {
+    let cancelled = false
+    let socket
+    ;(async () => {
+      const url = await config.discover()
+      if (cancelled) return
+      socket = io(url, { transports: ['websocket', 'polling'] })
+      socketRef.current = socket
+      socket.on('wa:status', (s) => {
+        if (s.connected) setConnected(true)
+        else if (s.hasQR) socket.emit('wa:start')
+      })
+      socket.on('wa:tunnel-url', (u) => { if (u) localStorage.setItem('wa:backend', u) })
+      socket.on('wa:qr', (d) => { if (loginModeRef.current === 'qr') setQrCode(d) })
+      socket.on('wa:ready', ({ user }) => { setConnected(true); setQrCode(null); setPairingCode(null); setWaUser(user); socket.emit('wa:getChats'); socket.emit('wa:getContacts') })
+      socket.on('wa:chats', (chats) => {
       setContacts(prev => {
         const merged = [...chats]
         for (const c of prev) {
@@ -230,7 +235,8 @@ export default function WhatsAppChat() {
       setMessages({}); setActiveJid(null); setPairingCode(null); setLoginMode('qr')
     })
     socket.emit('wa:start')
-    return () => { socket.close() }
+    })()
+    return () => { cancelled = true; if (socket) socket.close() }
   }, [])
 
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages, activeJid])
@@ -575,7 +581,7 @@ export default function WhatsAppChat() {
                 </svg>
               )}
             </button>
-            <button onClick={() => { if (window.confirm(t('logout.confirm'))) fetch(SOCKET_URL + '/api/wa/logout', { method: 'POST' }) }} title={t('logout.title')}>
+            <button onClick={() => { if (window.confirm(t('logout.confirm'))) fetch(config.backendURL + '/api/wa/logout', { method: 'POST' }) }} title={t('logout.title')}>
               <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15l-4-4 4-4 1.41 1.41L10.83 12H16v2h-5.17l2.58 2.59L11 17z"/>
               </svg>
