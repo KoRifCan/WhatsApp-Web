@@ -1,5 +1,5 @@
 const config = {
-  backendURL: 'https://ship-doctor-das-improving.trycloudflare.com',
+  backendURL: 'https://long-called-recognized-waiting.trycloudflare.com',
 }
 
 export default config
