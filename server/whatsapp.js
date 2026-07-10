@@ -47,14 +47,13 @@ export async function initWA(io) {
     fs.mkdirSync(SESSION_DIR, { recursive: true })
   }
 
-  let { state, saveCreds } = await useMultiFileAuthState(SESSION_DIR)
+  let { state } = await useMultiFileAuthState(SESSION_DIR)
 
   if (state.creds && !state.creds.registered) {
     fs.rmSync(SESSION_DIR, { recursive: true, force: true })
     fs.mkdirSync(SESSION_DIR, { recursive: true })
     const fresh = await useMultiFileAuthState(SESSION_DIR)
     state = fresh.state
-    saveCreds = fresh.saveCreds
   }
   const sock = makeWASocket({
     version: (await fetchLatestBaileysVersion()).version,
@@ -67,7 +66,10 @@ export async function initWA(io) {
 
   client.sock = sock
 
-  sock.ev.on('creds.update', saveCreds)
+  sock.ev.on('creds.update', (creds) => {
+    if (!fs.existsSync(SESSION_DIR)) fs.mkdirSync(SESSION_DIR, { recursive: true })
+    fs.writeFileSync(path.join(SESSION_DIR, 'creds.json'), JSON.stringify(creds, null, 2))
+  })
 
   sock.ev.on('connection.update', async (update) => {
     const { connection, lastDisconnect, qr } = update
