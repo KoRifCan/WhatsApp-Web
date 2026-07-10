@@ -1,0 +1,4 @@
+run = "cd server && node index.js"
+
+[deployment]
+run = ["cd server && node index.js"]
