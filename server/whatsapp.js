@@ -106,6 +106,12 @@ export async function initWA(io) {
   return client
 }
 
+export async function requestPairingCode(phoneNumber) {
+  if (!client.sock) throw new Error('WhatsApp not initialized')
+  const code = await client.sock.requestPairingCode(phoneNumber)
+  return code
+}
+
 export async function sendWAMessage(jid, text) {
   if (!client.sock) throw new Error('WhatsApp not connected')
   await client.sock.sendMessage(jid, { text })

@@ -5,7 +5,7 @@ import { Server } from 'socket.io'
 import path from 'path'
 import fs from 'fs'
 import { fileURLToPath } from 'url'
-import { initWA, sendWAMessage, logoutWA, getWAStatus } from './whatsapp.js'
+import { initWA, sendWAMessage, logoutWA, getWAStatus, requestPairingCode } from './whatsapp.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const PORT = process.env.PORT || 3001
@@ -52,6 +52,15 @@ io.on('connection', (socket) => {
     try {
       await sendWAMessage(jid, text)
       socket.emit('wa:sent', { jid, text })
+    } catch (e) {
+      socket.emit('wa:error', { error: e.message })
+    }
+  })
+
+  socket.on('wa:pair', async ({ phoneNumber }) => {
+    try {
+      const code = await requestPairingCode(phoneNumber)
+      socket.emit('wa:pair:code', { code })
     } catch (e) {
       socket.emit('wa:error', { error: e.message })
     }
