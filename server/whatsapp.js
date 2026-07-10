@@ -26,7 +26,7 @@ export function getWAStatus() {
 }
 
 function waitForSockReady(timeout = 15000) {
-  if (client.sock && client.qrCode) return Promise.resolve()
+  if (client.sock && client.qrCode && client.sock.ws?.readyState === 1) return Promise.resolve()
   if (client.isConnected) return Promise.resolve()
   return new Promise((resolve, reject) => {
     resolveSockReady = resolve
@@ -48,7 +48,7 @@ export async function initWA(io) {
 
   let { state, saveCreds } = await useMultiFileAuthState(SESSION_DIR)
 
-  if (state.creds && !state.creds.registered && state.creds.pairingCode) {
+  if (state.creds && !state.creds.registered) {
     fs.rmSync(SESSION_DIR, { recursive: true, force: true })
     fs.mkdirSync(SESSION_DIR, { recursive: true })
     const fresh = await useMultiFileAuthState(SESSION_DIR)
@@ -60,7 +60,8 @@ export async function initWA(io) {
     auth: state,
     printQRInTerminal: false,
     logger: pino({ level: 'silent' }),
-    browser: ['WhatsApp Web Clone', 'Chrome', '1.0.0'],
+    browser: ['Ubuntu', 'Chrome', '22.04.4'],
+    syncFullHistory: false,
   })
 
   client.sock = sock
@@ -90,6 +91,7 @@ export async function initWA(io) {
     }
     if (connection === 'close') {
       client.isConnected = false
+      client.qrCode = null
       client.sock = null
       const statusCode = lastDisconnect?.error?.output?.statusCode
       if (statusCode !== DisconnectReason.loggedOut) {
@@ -152,6 +154,7 @@ export async function requestPairingCode(phoneNumber) {
     throw new Error('Koneksi WhatsApp terputus, silakan coba lagi')
   }
   console.log(`[PAIR] Requesting code for ${phoneNumber}...`)
+  console.log(`[PAIR] sock=${!!client.sock}, ws=${client.sock?.ws?.readyState}, qr=${!!client.qrCode}, conn=${client.isConnected}`)
   try {
     const code = await client.sock.requestPairingCode(phoneNumber)
     if (!code || code.length < 4) {
