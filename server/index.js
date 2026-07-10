@@ -84,6 +84,12 @@ io.on('connection', (socket) => {
     if (waClient?.qrCode) {
       socket.emit('wa:qr', waClient.qrCode)
     }
+    if (waClient?.isConnected) {
+      socket.emit('wa:ready', { user: waClient.user })
+      if (waClient.contacts?.length > 0) {
+        socket.emit('wa:contacts', waClient.contacts)
+      }
+    }
   })
 })
 

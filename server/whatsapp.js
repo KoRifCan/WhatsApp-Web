@@ -13,6 +13,7 @@ let client = {
   isConnected: false,
   isInitialized: false,
   user: null,
+  contacts: [],
 }
 let _io = null
 let resolveSockReady = null
@@ -129,12 +130,12 @@ export async function initWA(io) {
     }
   })
 
-  sock.ev.on('contacts.upsert', () => {
-    const chats = sock.chats?.all() || []
-    const contacts = chats
+  sock.ev.on('contacts.upsert', (contacts) => {
+    const list = contacts
       .filter((c) => c.id.endsWith('@s.whatsapp.net'))
-      .map((c) => ({ jid: c.id, name: c.name || c.id.split('@')[0] }))
-    io.emit('wa:contacts', contacts)
+      .map((c) => ({ jid: c.id, name: c.name || c.notify || c.id.split('@')[0] }))
+    client.contacts = list
+    io.emit('wa:contacts', list)
   })
 
   return client
@@ -182,6 +183,7 @@ export async function logoutWA() {
   client.isConnected = false
   client.isInitialized = false
   client.user = null
+  client.contacts = []
   const dir = SESSION_DIR
   if (fs.existsSync(dir)) fs.rmSync(dir, { recursive: true, force: true })
 }
