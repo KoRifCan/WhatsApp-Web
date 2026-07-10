@@ -14,6 +14,13 @@ export default function Chat() {
   const [onlineUsers, setOnlineUsers] = useState({})
   const [typingUsers, setTypingUsers] = useState({})
 
+  const [waConnected, setWaConnected] = useState(false)
+  const [waQR, setWaQR] = useState(null)
+  const [waContacts, setWaContacts] = useState([])
+  const [waMessages, setWaMessages] = useState({})
+  const [waActiveJid, setWaActiveJid] = useState(null)
+  const [waConnecting, setWaConnecting] = useState(false)
+
   const fetchContacts = useCallback(async () => {
     try {
       const res = await fetch('/api/users', {
@@ -110,6 +117,53 @@ export default function Chat() {
       setTypingUsers(prev => ({ ...prev, [conversationId]: typing }))
     })
 
+    socket.on('wa:qr', (qrDataUrl) => {
+      setWaQR(qrDataUrl)
+      setWaConnecting(true)
+    })
+
+    socket.on('wa:ready', ({ contacts }) => {
+      setWaConnected(true)
+      setWaQR(null)
+      setWaConnecting(false)
+      setWaContacts(contacts || [])
+    })
+
+    socket.on('wa:message', ({ conversationId, message }) => {
+      setWaMessages(prev => ({
+        ...prev,
+        [conversationId]: [...(prev[conversationId] || []), message],
+      }))
+      if (waActiveJid && conversationId === `wa_${waActiveJid.replace(/[^a-zA-Z0-9]/g, '_')}`) {
+        socket.emit('message:read', { conversationId })
+      }
+    })
+
+    socket.on('wa:loggedOut', () => {
+      setWaConnected(false)
+      setWaQR(null)
+      setWaConnecting(false)
+      setWaContacts([])
+      setWaMessages({})
+      setWaActiveJid(null)
+    })
+
+    socket.on('wa:sent', ({ jid, text }) => {
+      const convId = `wa_${jid.replace(/[^a-zA-Z0-9]/g, '_')}`
+      setWaMessages(prev => ({
+        ...prev,
+        [convId]: [...(prev[convId] || []), {
+          id: Date.now().toString(),
+          senderId: user.id,
+          text,
+          type: 'text',
+          timestamp: new Date().toISOString(),
+          status: 'sent',
+          fromMe: true,
+        }],
+      }))
+    })
+
     return () => {
       socket.off('user:status')
       socket.off('conversation:created')
@@ -120,8 +174,13 @@ export default function Chat() {
       socket.off('message:edited')
       socket.off('message:deleted')
       socket.off('typing:status')
+      socket.off('wa:qr')
+      socket.off('wa:ready')
+      socket.off('wa:message')
+      socket.off('wa:loggedOut')
+      socket.off('wa:sent')
     }
-  }, [activeConv, user.id])
+  }, [activeConv, user.id, waActiveJid])
 
   useEffect(() => {
     const socket = getSocket()
@@ -182,7 +241,36 @@ export default function Chat() {
     socket.emit('message:delete', { conversationId, messageId })
   }
 
+  const startWA = async () => {
+    setWaConnecting(true)
+    try {
+      await fetch('/api/whatsapp/start', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      })
+    } catch {}
+  }
+
+  const sendWAMessage = (jid, text) => {
+    if (!jid || !text.trim()) return
+    const socket = getSocket()
+    socket.emit('wa:send', { jid, text: text.trim() })
+  }
+
+  const selectWAChat = (jid) => {
+    setWaActiveJid(jid)
+    setActiveConv(null)
+  }
+
+  const logoutWA = () => {
+    const socket = getSocket()
+    socket.emit('wa:logout')
+  }
+
   const getContactStatus = (contactId) => onlineUsers[contactId] ?? false
+
+  const waConvId = waActiveJid ? `wa_${waActiveJid.replace(/[^a-zA-Z0-9]/g, '_')}` : null
+  const activeWAMessages = waConvId ? waMessages[waConvId] || [] : []
 
   return (
     <div className="chat-page">
@@ -196,6 +284,14 @@ export default function Chat() {
           onStartConversation={startConversation}
           getContactStatus={getContactStatus}
           onLogout={logout}
+          waConnected={waConnected}
+          waConnecting={waConnecting}
+          waQR={waQR}
+          waContacts={waContacts}
+          waActiveJid={waActiveJid}
+          onStartWA={startWA}
+          onSelectWAChat={selectWAChat}
+          onLogoutWA={logoutWA}
         />
         {activeConv ? (
           <ChatArea
@@ -208,6 +304,17 @@ export default function Chat() {
             typingUsers={typingUsers}
             onEditMessage={editMessage}
             onDeleteMessage={deleteMessage}
+          />
+        ) : waActiveJid ? (
+          <ChatArea
+            activeConv={{
+              id: waConvId,
+              otherUser: { name: waContacts.find(c => c.jid === waActiveJid)?.name || waActiveJid, avatar: 'WA' },
+            }}
+            messages={activeWAMessages}
+            user={user}
+            onSend={(text) => sendWAMessage(waActiveJid, text)}
+            getContactStatus={() => false}
           />
         ) : (
           <WelcomeScreen user={user} />

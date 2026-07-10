@@ -9,6 +9,7 @@ import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import multer from 'multer'
+import { startWAClient, sendWAMessage, logoutWA, getWAStatus, getWAClient } from './whatsapp.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const DATA_FILE = path.join(__dirname, 'data.json')
@@ -156,6 +157,26 @@ app.post('/api/upload', authMiddleware, upload.single('file'), (req, res) => {
     type: req.file.mimetype,
     isImage,
   })
+})
+
+app.post('/api/whatsapp/start', authMiddleware, async (req, res) => {
+  try {
+    const client = await startWAClient(req.userId, io)
+    const status = getWAStatus(req.userId)
+    res.json({ status })
+  } catch (e) {
+    res.status(500).json({ error: e.message })
+  }
+})
+
+app.get('/api/whatsapp/status', authMiddleware, (req, res) => {
+  const status = getWAStatus(req.userId)
+  res.json(status)
+})
+
+app.post('/api/whatsapp/logout', authMiddleware, async (req, res) => {
+  await logoutWA(req.userId)
+  res.json({ success: true })
 })
 
 function authenticateSocket(token) {
@@ -354,6 +375,20 @@ io.on('connection', (socket) => {
         typing: false,
       })
     }
+  })
+
+  socket.on('wa:send', async ({ jid, text }) => {
+    try {
+      await sendWAMessage(socket.userId, jid, text)
+      socket.emit('wa:sent', { jid, text })
+    } catch (e) {
+      socket.emit('wa:error', { error: e.message })
+    }
+  })
+
+  socket.on('wa:logout', async () => {
+    await logoutWA(socket.userId)
+    socket.emit('wa:loggedOut')
   })
 
   socket.on('disconnect', () => {
