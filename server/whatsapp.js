@@ -78,7 +78,7 @@ export async function initWA(io) {
       fs.mkdirSync(SESSION_DIR, { recursive: true })
     }
 
-    let { state } = await useMultiFileAuthState(SESSION_DIR)
+    let { state, saveCreds } = await useMultiFileAuthState(SESSION_DIR)
 
     _credsWereRegistered = state.creds?.registered || false
 
@@ -121,8 +121,11 @@ export async function initWA(io) {
     if (creds.registered) {
       console.log('[WA] creds.update: registered=true, wasRegistered=' + _credsWereRegistered)
     }
-    if (!fs.existsSync(SESSION_DIR)) fs.mkdirSync(SESSION_DIR, { recursive: true })
-    fs.writeFileSync(path.join(SESSION_DIR, 'creds.json'), JSON.stringify(creds, BufferJSON.replacer, 2))
+    if (_credsWereRegistered || creds.registered) {
+      saveCreds()
+    } else if (!fs.existsSync(path.join(SESSION_DIR, 'creds.json'))) {
+      saveCreds()
+    }
     if (creds.registered && !_credsWereRegistered) {
       _credsWereRegistered = true
       console.log('[WA] Phone pairing completed')
