@@ -1,0 +1,19 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        working-directory: ./server
+        run: npm install --cache /tmp/npm-cache
+      - name: Build client
+        working-directory: ./client
+        run: npm install --cache /tmp/npm-cache && npm run build
+      - name: Restart server
+        run: pm2 restart whatsapp-web
