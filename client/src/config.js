@@ -10,16 +10,15 @@ function getBackendURL() {
   return null
 }
 
-// Set URL setelah deploy ke Render
-const RENDER_BACKEND = null
+const TUNNEL_URL = 'https://long-called-recognized-waiting.trycloudflare.com'
 
 async function discoverBackend() {
-  if (RENDER_BACKEND) {
+  if (TUNNEL_URL) {
     try {
-      const res = await fetch(`${RENDER_BACKEND}/api/wa/status`, { signal: AbortSignal.timeout(5000) })
+      const res = await fetch(`${TUNNEL_URL}/api/wa/status`, { signal: AbortSignal.timeout(5000) })
       if (res.ok) {
-        localStorage.setItem('wa:backend', RENDER_BACKEND)
-        return RENDER_BACKEND
+        localStorage.setItem('wa:backend', TUNNEL_URL)
+        return TUNNEL_URL
       }
     } catch {}
   }
